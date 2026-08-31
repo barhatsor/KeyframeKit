@@ -87,11 +87,11 @@ export default defineConfig({
     */
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/benhatsor/KeyframeKit' }
+      { icon: 'github', link: 'https://github.com/barhatsor/KeyframeKit' }
     ],
 
     footer: {
-      message: 'Created by <a href="https://berryscript.com" target="_blank">Ben Hatsor</a>. MIT License.'
+      message: 'Created by <a href="https://berryscript.com" target="_blank">Bar Hatsor</a>. MIT License.'
     },
 
     docFooter: {

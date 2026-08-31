@@ -3,15 +3,15 @@
   "type": "module",
   "version": "1.3.2",
   "description": "Unlock full playback control over your CSS animations with JavaScript.",
-  "author": "Ben Hatsor",
+  "author": "Bar Hatsor",
   "license": "MIT",
   "homepage": "https://keyframekit.berryscript.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/benhatsor/KeyframeKit.git"
+    "url": "git+https://github.com/barhatsor/KeyframeKit.git"
   },
   "bugs": {
-    "url": "https://github.com/benhatsor/KeyframeKit/issues"
+    "url": "https://github.com/barhatsor/KeyframeKit/issues"
   },
   "keywords": [
     "css",

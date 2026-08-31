@@ -137,8 +137,8 @@ attachedAnim.play();
 <!-- References -->
 [KeyframeKit]: https://keyframekit.berryscript.com
 [Web Animations API]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API
-[KeyframeKit article]: https://benhatsor.medium.com/99573ef4738b
-[Live Demo]: https://codepen.io/benhatsor/pen/JoRPNmz
+[KeyframeKit article]: https://barhatsor.medium.com/99573ef4738b
+[Live Demo]: https://codepen.io/barhatsor/pen/JoRPNmz
 [Using the Web Animations API (MDN)]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API
 [Imported stylesheet @import issue]: https://github.com/WICG/construct-stylesheets/issues/119#issuecomment-588352418
 [`KeyframeEffectParameters`]: https://keyframekit.berryscript.com/reference/KeyframeEffectParameters
@@ -150,7 +150,7 @@ attachedAnim.play();
 [npm-version-href]: https://www.npmjs.com/package/keyframekit
 [npm-downloads-src]: https://img.shields.io/npm/d18m/keyframekit
 [npm-downloads-href]: https://www.npmjs.com/package/keyframekit
-[minified-size-src]: https://img.shields.io/github/size/benhatsor/KeyframeKit/dist/index.min.js
+[minified-size-src]: https://img.shields.io/github/size/barhatsor/KeyframeKit/dist/index.min.js
 [minified-size-href]: /dist/index.min.js
-[ci-src]: https://github.com/benhatsor/KeyframeKit/actions/workflows/ci.yml/badge.svg
-[ci-href]: https://github.com/benhatsor/KeyframeKit/actions/workflows/ci.yml
+[ci-src]: https://github.com/barhatsor/KeyframeKit/actions/workflows/ci.yml/badge.svg
+[ci-href]: https://github.com/barhatsor/KeyframeKit/actions/workflows/ci.yml
