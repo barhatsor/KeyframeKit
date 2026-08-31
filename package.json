@@ -1,7 +1,7 @@
 {
   "name": "keyframekit",
   "type": "module",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Unlock full playback control over your CSS animations with JavaScript.",
   "author": "Bar Hatsor",
   "license": "MIT",
