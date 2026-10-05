@@ -246,12 +246,14 @@ export function load(app) {
       linksText += `\n- [${ref.getFriendlyFullName()}](${url})`;
     };
 
+    /*
     if (forwardRefs) {
       linksText += '\n### Referenced Here';
       [...forwardRefs].sort(byName).forEach(formatLink);
     }
+    */
     if (reverseRefs) {
-      linksText += '\n### References This';
+      // linksText += '\n### References This';
       [...reverseRefs].sort(byName).forEach(formatLink);
     }
 

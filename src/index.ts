@@ -1,11 +1,11 @@
-/**
- * KeyframeKit
- * @license MIT
- *
- * See README.md for usage.
- */
+
+export * from './KeyframesFactory';
 
 import * as KeyframesFactory from './KeyframesFactory';
-export { KeyframesFactory as default };
+/**
+ * @deprecated Use named exports instead.
+ * @group Deprecated
+ */
+export default KeyframesFactory;
 
 export { KeyframeEffectParameters, type KeyframeArgument } from './KeyframeEffectParameters';

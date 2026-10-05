@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import KeyframeKit from '../../../src/index';
+import { convertAllStyleSheetKeyframesRules, ConvertedKeyframes } from '../../../src/index';
 import { createStyleSheet } from './createStyleSheet-helper';
 
 
-describe('getAllStyleSheetKeyframesRules', () => {
+describe('convertAllStyleSheetKeyframesRules', () => {
 
   it('extracts all keyframes rules from a stylesheet', async () => {
     const sheet = await createStyleSheet(`
@@ -18,17 +18,17 @@ describe('getAllStyleSheetKeyframesRules', () => {
       .some-class { color: red; }
     `);
 
-    const result = KeyframeKit.getAllStyleSheetKeyframesRules({ in: sheet });
+    const result = convertAllStyleSheetKeyframesRules({ in: sheet });
 
-    expect(Object.keys(result)).toHaveLength(2);
-    expect(result['fadeIn']).toBeInstanceOf(KeyframeKit.ParsedKeyframes);
-    expect(result['slideUp']).toBeInstanceOf(KeyframeKit.ParsedKeyframes);
+    expect(result.size).toBe(2);
+    expect(result.get('fadeIn')).toBeInstanceOf(ConvertedKeyframes);
+    expect(result.get('slideUp')).toBeInstanceOf(ConvertedKeyframes);
   });
 
   it('returns empty object when no keyframes rules exist', async () => {
     const sheet = await createStyleSheet('.foo { color: red; }');
 
-    const result = KeyframeKit.getAllStyleSheetKeyframesRules({ in: sheet });
+    const result = convertAllStyleSheetKeyframesRules({ in: sheet });
     expect(Object.keys(result)).toHaveLength(0);
   });
 
@@ -43,19 +43,19 @@ describe('getAllStyleSheetKeyframesRules', () => {
     document.head.appendChild(style);
 
     try {
-      const result = KeyframeKit.getAllStyleSheetKeyframesRules({
+      const result = convertAllStyleSheetKeyframesRules({
         in: document.styleSheets
       });
-      expect(result['bounce']).toBeInstanceOf(KeyframeKit.ParsedKeyframes);
+      expect(result.get('bounce')).toBeInstanceOf(ConvertedKeyframes);
     } finally {
       document.head.removeChild(style);
     }
   });
 
-  it('throws SourceTypeError for invalid source', () => {
+  it('throws TypeError for invalid source', () => {
     expect(() => {
-      KeyframeKit.getAllStyleSheetKeyframesRules({ in: 'bad' as any });
-    }).toThrow(KeyframeKit.SourceTypeError);
+      convertAllStyleSheetKeyframesRules({ in: 'bad' as any });
+    }).toThrow(TypeError);
   });
 
 });

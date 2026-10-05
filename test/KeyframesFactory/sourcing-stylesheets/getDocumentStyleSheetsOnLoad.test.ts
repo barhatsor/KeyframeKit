@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import KeyframeKit from '../../../src/index';
+import { getDocumentStyleSheetsOnLoad } from '../../../src/index';
 
 
 describe('getDocumentStyleSheetsOnLoad', () => {
 
   it('returns document.styleSheets when document is already loaded', async () => {
-    const sheets = await KeyframeKit.getDocumentStyleSheetsOnLoad();
+    const sheets = await getDocumentStyleSheetsOnLoad();
     expect(sheets).toBe(document.styleSheets);
   });
 

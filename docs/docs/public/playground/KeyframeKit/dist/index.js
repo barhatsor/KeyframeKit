@@ -3,62 +3,36 @@
  * @license MIT
  */
 /**
- * Thrown if keyframes rule name is not a string.
- * @see
- *  - {@linkcode getStyleSheetKeyframes}
- * @group Errors
- */
-class KeyframesRuleNameTypeError extends TypeError {
-    message = `Keyframes rule name must be a string.`;
-}
-/**
- * Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
- * @see
- *  - {@linkcode getStyleSheetKeyframes}
- *  - {@linkcode getAllStyleSheetKeyframesRules}
- * @group Errors
- */
-class SourceTypeError extends TypeError {
-    message = `Source must be either a CSSStyleSheet or a StyleSheetList.`;
-}
-
-/**
  * Gets a document's stylesheets when it loads,
  * or immediately returns them if it's already loaded.
- * @param obj
- *  @param obj.document The document to get stylesheets from.
+ * @param document The document to get stylesheets from.
  * @group Sourcing Stylesheets
  */
-async function getDocumentStyleSheetsOnLoad({ document = window.document } = {}) {
-    await waitForDocumentLoad({
-        document: document
-    });
+async function getDocumentStyleSheetsOnLoad(document = window.document) {
+    await waitForDocumentLoad(document);
     return document.styleSheets;
 }
-async function waitForDocumentLoad({ document }) {
-    const isLoaded = () => (document.readyState === 'complete');
+async function waitForDocumentLoad(document) {
+    const isLoaded = () => document.readyState === 'complete';
     if (isLoaded())
         return;
-    const { promise, signal, abort } = abortablePromise();
-    // 'signal' removes listener after abortion
-    document.addEventListener('readystatechange', () => {
-        if (isLoaded())
-            abort();
-    }, { signal });
-    await promise;
-}
-function abortablePromise() {
-    const abortController = new AbortController(), signal = abortController.signal, abort = abortController.abort.bind(abortController);
     const { promise, resolve } = Promise.withResolvers();
-    signal.addEventListener('abort', () => resolve(signal.reason), { once: true });
-    return { promise, signal, abort };
+    const cleanup = new AbortController();
+    const onReadyStateChange = () => {
+        if (isLoaded())
+            resolve();
+    };
+    document.addEventListener('readystatechange', onReadyStateChange, { signal: cleanup.signal });
+    await promise;
+    // remove the listener
+    cleanup.abort();
 }
 
 /**
  * Imports a stylesheet from a URL.
  * @param url The URL of the stylesheet to import.
  * @throws
- *  - `TypeError` &nbsp;
+ *  - `TypeError`
  *    - Thrown if the stylesheet could not be imported.
  * @remarks
  *  - `@import` rules won't be resolved in imported stylesheets.
@@ -72,9 +46,8 @@ function abortablePromise() {
  */
 async function importStyleSheet(url) {
     const resp = await fetch(url);
-    if (!resp.ok) {
+    if (!resp.ok)
         throw new TypeError(`Failed to fetch dynamically imported module: ${url}`);
-    }
     const respText = await resp.text();
     const styleSheet = new CSSStyleSheet();
     styleSheet.replaceSync(respText);
@@ -99,7 +72,12 @@ class KeyframeEffectParameters {
      */
     constructor({ keyframes, options = {} }) {
         this.keyframes = keyframes;
-        this.options = this.#parseOptionsArg(options);
+        const parsedOptions = parseOptionsArg(options);
+        // CSS defaults to 'ease', but the Web Animations API defaults to 'linear'
+        // https://drafts.csswg.org/web-animations-1/#dom-effecttiming-easing
+        if (!('easing' in parsedOptions))
+            parsedOptions.easing = 'ease';
+        this.options = parsedOptions;
     }
     /**
      * @param obj
@@ -113,27 +91,35 @@ class KeyframeEffectParameters {
      *  - [The Animation interface - Web Animations Spec](https://drafts.csswg.org/web-animations-1/#the-animation-interface)
      */
     toAnimation({ target, options: additionalOptions = {}, timeline = document.timeline }) {
-        additionalOptions = this.#parseOptionsArg(additionalOptions);
+        const parsedAdditionalOptions = parseOptionsArg(additionalOptions);
         // override existing option keys with additional options
         const options = {
-            ...this.options, ...additionalOptions
+            ...this.options,
+            ...parsedAdditionalOptions
         };
         const keyframeEffect = new KeyframeEffect(target, this.keyframes, options);
         const animation = new Animation(keyframeEffect, timeline);
         return animation;
     }
-    /** - https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect-target-keyframes-options-options
-        - https://drafts.csswg.org/web-animations-1/#dom-effecttiming-duration */
-    #parseOptionsArg(options) {
-        if (typeof options === 'number') {
-            return { duration: options };
-        }
-        return options;
-    }
+}
+/**
+ * @see
+ * - https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect-target-keyframes-options-options
+ * - https://drafts.csswg.org/web-animations-1/#dom-effecttiming-duration
+ */
+function parseOptionsArg(optionsArg) {
+    if (typeof optionsArg === 'number')
+        return { duration: optionsArg };
+    return optionsArg;
 }
 
-/** @group Data Types */
-class ParsedKeyframes {
+/**
+ * Web Animations API keyframes converted with the factory functions.
+ *
+ * Call {@linkcode toKeyframeEffect} to create an animation from them.
+ * @group Data Types
+ */
+class ConvertedKeyframes {
     keyframes;
     constructor(keyframes) {
         this.keyframes = keyframes;
@@ -143,25 +129,18 @@ class ParsedKeyframes {
      *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#options)
      */
     toKeyframeEffect(options) {
-        let keyframeEffect;
-        // convert (required) nullable to optional
-        if (options !== null) {
-            keyframeEffect = new KeyframeEffectParameters({
-                keyframes: this.keyframes,
-                options: options
-            });
-        }
-        else {
-            keyframeEffect = new KeyframeEffectParameters({
-                keyframes: this.keyframes
-            });
-        }
+        const keyframeEffect = new KeyframeEffectParameters({
+            keyframes: this.keyframes,
+            // convert (required) nullable to optional
+            options: options ?? undefined
+        });
         return keyframeEffect;
     }
 }
 
 const CHARS = {
     PERCENT_SIGN: '%',
+    COMMA: ',',
     HYPHEN_MINUS: '-',
     DOUBLE_HYPHEN_MINUS: '--',
     WEBKIT_PREFIX: '-webkit-'
@@ -169,36 +148,49 @@ const CHARS = {
 /**
  * Converts a CSS keyframes rule to Web Animations API keyframes.
  * @param keyframesRule The rule to convert.
- * @group Parsing Stylesheet Keyframes
+ * @group Converting Stylesheet Keyframes
  */
-function parseKeyframesRule(keyframesRule) {
-    const keyframes = keyframesRule;
-    let parsedKeyframes = [];
-    for (const keyframe of keyframes) {
-        // remove trailing '%'
-        /// https://drafts.csswg.org/css-animations/#dom-csskeyframerule-keytext
-        const percentString = removeSuffix({
-            of: keyframe.keyText,
-            suffix: CHARS.PERCENT_SIGN
-        });
-        const percent = Number(percentString);
-        const offset = percent / 100;
-        let parsedProperties = {};
-        for (const propertyName of keyframe.style) {
-            /// https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/getPropertyValue
-            const propertyValue = keyframe.style.getPropertyValue(propertyName);
-            /// https://drafts.csswg.org/web-animations-1/#ref-for-animation-property-name-to-idl-attribute-name%E2%91%A0
-            const attributeName = animationPropertyNameToIDLAttributeName(propertyName);
-            parsedProperties[attributeName] = propertyValue;
-        }
-        const parsedKeyframe = {
-            ...parsedProperties,
-            offset: offset
-        };
-        parsedKeyframes.push(parsedKeyframe);
+function convertKeyframesRule(keyframesRule) {
+    const keyframes = Array.from(keyframesRule);
+    // we `flatMap` as keyframes can be conjoined, eg. `0%, 100%`
+    // and we have to split them for the Web Animations API's format
+    // see: https://drafts.csswg.org/css-animations/#dom-csskeyframerule-keytext
+    const parsedKeyframes = keyframes.flatMap(keyframe => parseKeyText(keyframe.keyText).map(percent => parseKeyframe({ keyframe, percent })));
+    // sort the keyframes in place by escalating offset
+    // (this is required to avoid a TypeError,
+    // see: https://drafts.csswg.org/web-animations-1/#processing-a-keyframes-argument).
+    // note: the `!` are safe: these are keyframes created by
+    // us, which always have an offset.
+    parsedKeyframes.sort((a, b) => a.offset - b.offset);
+    return new ConvertedKeyframes(parsedKeyframes);
+}
+function parseKeyframe({ keyframe, percent }) {
+    const offset = percent / 100;
+    const parsedProperties = parseKeyframeProperties(keyframe.style);
+    const parsedKeyframe = {
+        ...parsedProperties,
+        offset
+    };
+    return parsedKeyframe;
+}
+function parseKeyframeProperties(style) {
+    const parsedProperties = {};
+    for (const propertyName of style) {
+        /// https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/getPropertyValue
+        const propertyValue = style.getPropertyValue(propertyName);
+        /// https://drafts.csswg.org/web-animations-1/#ref-for-animation-property-name-to-idl-attribute-name%E2%91%A0
+        const attributeName = animationPropertyNameToIDLAttributeName(propertyName);
+        parsedProperties[attributeName] = propertyValue;
     }
-    const parsedKeyframesInstance = new ParsedKeyframes(parsedKeyframes);
-    return parsedKeyframesInstance;
+    return parsedProperties;
+}
+/** https://drafts.csswg.org/css-animations/#dom-csskeyframerule-keytext */
+function parseKeyText(keyText) {
+    const percentages = keyText.split(CHARS.COMMA);
+    // we need to trim `percent`, as Blink
+    // returns spaced keyText percentages (e.g. `1%, 2%`)
+    const parsePercent = (percent) => Number(removeSuffix(percent.trim(), CHARS.PERCENT_SIGN));
+    return percentages.map(percent => parsePercent(percent));
 }
 /** https://drafts.csswg.org/web-animations-1/#animation-property-name-to-idl-attribute-name */
 function animationPropertyNameToIDLAttributeName(property) {
@@ -216,9 +208,8 @@ function animationPropertyNameToIDLAttributeName(property) {
 function cssPropertyToIDLAttribute(property, lowercaseFirst = false) {
     let output = '';
     let uppercaseNext = false;
-    if (lowercaseFirst) {
+    if (lowercaseFirst)
         property = property.slice(1);
-    }
     for (const c of property) {
         if (c === CHARS.HYPHEN_MINUS) {
             uppercaseNext = true;
@@ -242,65 +233,63 @@ function isCustomPropertyName(property) {
 function isWebkitCasedAttribute(property) {
     return property.startsWith(CHARS.WEBKIT_PREFIX);
 }
-function removeSuffix({ of: string, suffix }) {
-    return string.slice(0, -suffix.length);
+function removeSuffix(value, suffix) {
+    return value.slice(0, -suffix.length);
 }
 
 /**
- * Gets a CSS keyframes rule from a stylesheet or stylesheet list,
- * then converts it to Web Animations API keyframes.
+ * Converts a CSS keyframes rule from a stylesheet (or stylesheet list)
+ * into Web Animations API keyframes.
  * @param obj
  *  @param obj.of The name of the `@keyframes` rule to get keyframes from.
  *  @param obj.in The stylesheet or stylesheet list where the rule resides.
  * @throws
- *  - {@linkcode KeyframesRuleNameTypeError} &nbsp;
+ *  - `TypeError`
  *    - Thrown if keyframes rule name is not a string.
- *  - {@linkcode SourceTypeError} &nbsp;
+ *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
- * @group Parsing Stylesheet Keyframes
+ * @group Converting Stylesheet Keyframes
  */
-function getStyleSheetKeyframes({ of: ruleName, in: source }) {
-    if (typeof ruleName !== 'string') {
-        throw new KeyframesRuleNameTypeError();
-    }
+function convertStyleSheetKeyframes({ of: ruleName, in: source }) {
+    if (typeof ruleName !== 'string')
+        throw new TypeError(`Keyframes rule name must be a string.`);
     switch (true) {
         case source instanceof StyleSheetList:
-            return getStyleSheetKeyframesInStyleSheetList({
+            return convertStyleSheetKeyframesInStyleSheetList({
                 of: ruleName,
                 styleSheetList: source
             });
         case source instanceof CSSStyleSheet:
-            return getStyleSheetKeyframesInStyleSheet({
+            return convertStyleSheetKeyframesInStyleSheet({
                 of: ruleName,
                 styleSheet: source
             });
         default:
-            throw new SourceTypeError();
+            throw new TypeError(`Source must be either a CSSStyleSheet or a StyleSheetList.`);
     }
 }
-function getStyleSheetKeyframesInStyleSheetList({ of: ruleName, styleSheetList }) {
-    for (const styleSheet of styleSheetList) {
-        const keyframesRule = getStyleSheetKeyframesInStyleSheet({
-            of: ruleName,
-            styleSheet: styleSheet
-        });
-        if (keyframesRule !== undefined) {
-            return keyframesRule;
-        }
-    }
-    return undefined;
+function convertStyleSheetKeyframesInStyleSheetList({ of: ruleName, styleSheetList }) {
+    const foundRules = Array.from(styleSheetList)
+        .map(styleSheet => findKeyframesRuleInStyleSheet({ ruleName, styleSheet }))
+        .filter(rule => rule !== undefined);
+    const foundRule = foundRules.at(-1);
+    if (foundRule === undefined)
+        return;
+    if (foundRules.length > 1)
+        console.warn(`Found multiple declarations for keyframes rule ${ruleName}. Using rule from last stylesheet in list.`);
+    return convertKeyframesRule(foundRule);
 }
-function getStyleSheetKeyframesInStyleSheet({ of: ruleName, styleSheet }) {
-    for (const rule of styleSheet.cssRules) {
-        if (!(rule instanceof CSSKeyframesRule)) {
-            continue;
-        }
-        if (rule.name === ruleName) {
-            const keyframes = parseKeyframesRule(rule);
-            return keyframes;
-        }
-    }
-    return undefined;
+function convertStyleSheetKeyframesInStyleSheet({ of: ruleName, styleSheet }) {
+    const rule = findKeyframesRuleInStyleSheet({ ruleName, styleSheet });
+    if (rule === undefined)
+        return;
+    return convertKeyframesRule(rule);
+}
+function findKeyframesRuleInStyleSheet({ ruleName, styleSheet }) {
+    const cssRules = Array.from(styleSheet.cssRules);
+    const rule = cssRules.find((rule) => rule instanceof CSSKeyframesRule &&
+        rule.name === ruleName);
+    return rule;
 }
 
 /**
@@ -309,65 +298,52 @@ function getStyleSheetKeyframesInStyleSheet({ of: ruleName, styleSheet }) {
  * @param obj
  *  @param obj.in The style sheet or style sheet list to get keyframes from.
  * @throws
- *  - {@linkcode SourceTypeError} &nbsp;
+ *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
- * @group Parsing Stylesheet Keyframes
+ * @group Converting Stylesheet Keyframes
  */
-function getAllStyleSheetKeyframesRules({ in: source }) {
+function convertAllStyleSheetKeyframesRules({ in: source }) {
     switch (true) {
         case source instanceof StyleSheetList:
-            return getAllStyleSheetKeyframesRulesInStyleSheetList({
-                styleSheetList: source
-            });
+            return convertAllStyleSheetKeyframesRulesInStyleSheetList(source);
         case source instanceof CSSStyleSheet:
-            return getAllStyleSheetKeyframesRulesInStyleSheet({
-                styleSheet: source
-            });
+            return convertAllStyleSheetKeyframesRulesInStyleSheet(source);
         default:
-            throw new SourceTypeError();
+            throw new TypeError(`Source must be either a CSSStyleSheet or a StyleSheetList.`);
     }
 }
-function getAllStyleSheetKeyframesRulesInStyleSheetList({ styleSheetList }) {
-    let keyframesRules = {};
+function convertAllStyleSheetKeyframesRulesInStyleSheetList(styleSheetList) {
+    const keyframesRules = new Map();
     for (const styleSheet of styleSheetList) {
-        const styleSheetKeyframesRules = getAllStyleSheetKeyframesRulesInStyleSheet({
-            styleSheet: styleSheet
-        });
-        keyframesRules = {
-            ...keyframesRules,
-            ...styleSheetKeyframesRules
-        };
-    }
-    return keyframesRules;
-}
-function getAllStyleSheetKeyframesRulesInStyleSheet({ styleSheet }) {
-    let keyframesRules = {};
-    for (const rule of styleSheet.cssRules) {
-        if (!(rule instanceof CSSKeyframesRule)) {
-            continue;
+        const rules = convertAllStyleSheetKeyframesRulesInStyleSheet(styleSheet);
+        for (const [ruleName, keyframesRule] of rules) {
+            if (keyframesRules.has(ruleName))
+                console.warn(`Found multiple declarations for keyframes rule ${ruleName}. Using rule from last stylesheet in list.`);
+            keyframesRules.set(ruleName, keyframesRule);
         }
-        const keyframes = parseKeyframesRule(rule);
-        keyframesRules[rule.name] = keyframes;
+    }
+    return keyframesRules;
+}
+function convertAllStyleSheetKeyframesRulesInStyleSheet(styleSheet) {
+    const keyframesRules = new Map();
+    for (const rule of styleSheet.cssRules) {
+        if (!(rule instanceof CSSKeyframesRule))
+            continue;
+        const keyframes = convertKeyframesRule(rule);
+        keyframesRules.set(rule.name, keyframes);
     }
     return keyframesRules;
 }
 
-/**
- * @module KeyframesFactory
- * @group Default Export
- */
-
-const index = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const KeyframesFactory = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
     __proto__: null,
-    KeyframesRuleNameTypeError,
-    ParsedKeyframes,
-    SourceTypeError,
-    getAllStyleSheetKeyframesRules,
+    ConvertedKeyframes,
+    convertAllStyleSheetKeyframesRules,
+    convertKeyframesRule,
+    convertStyleSheetKeyframes,
     getDocumentStyleSheetsOnLoad,
-    getStyleSheetKeyframes,
-    importStyleSheet,
-    parseKeyframesRule
+    importStyleSheet
 }, Symbol.toStringTag, { value: 'Module' }));
 
-export { KeyframeEffectParameters, index as default };
+export { ConvertedKeyframes, KeyframeEffectParameters, convertAllStyleSheetKeyframesRules, convertKeyframesRule, convertStyleSheetKeyframes, KeyframesFactory as default, getDocumentStyleSheetsOnLoad, importStyleSheet };
 //# sourceMappingURL=index.js.map

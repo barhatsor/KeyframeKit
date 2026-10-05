@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import KeyframeKit from '../../../src/index';
+import { importStyleSheet } from '../../../src/index';
 
 
 describe('importStyleSheet', () => {
@@ -8,7 +8,7 @@ describe('importStyleSheet', () => {
 
     const cssText = `@keyframes testAnim { 0% { width: 0%; } 100% { width: 100%; } }`;
 
-    const styleSheet = await KeyframeKit.importStyleSheet(`data:text/css,${cssText}`);
+    const styleSheet = await importStyleSheet(`data:text/css,${cssText}`);
 
     expect(styleSheet).toBeInstanceOf(CSSStyleSheet);
     expect(styleSheet.cssRules[0]).toBeInstanceOf(CSSKeyframesRule);
@@ -24,7 +24,7 @@ describe('importStyleSheet', () => {
     const exampleURL = 'https://example.com';
 
     await expect(
-      KeyframeKit.importStyleSheet(exampleURL)
+      importStyleSheet(exampleURL)
     ).rejects.toThrow(
       expect.toSatisfy(e =>
         e instanceof TypeError &&

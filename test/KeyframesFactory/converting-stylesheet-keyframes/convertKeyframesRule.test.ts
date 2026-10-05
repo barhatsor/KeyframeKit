@@ -1,9 +1,9 @@
 import { describe, it, expect, assert } from 'vitest';
-import KeyframeKit from '../../../src/index';
+import { convertStyleSheetKeyframes } from '../../../src/index';
 import { createStyleSheet } from './createStyleSheet-helper';
 
 
-describe('parseKeyframesRule - property name conversion', () => {
+describe('convertKeyframesRule - property name conversion', () => {
 
   it('converts kebab-case to camelCase', async () => {
     const sheet = await createStyleSheet(`
@@ -13,7 +13,7 @@ describe('parseKeyframesRule - property name conversion', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
     assert(result);
     expect(result.keyframes[0]).toHaveProperty('backgroundColor');
   });
@@ -26,7 +26,7 @@ describe('parseKeyframesRule - property name conversion', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
     assert(result);
     expect(result.keyframes[0]).toHaveProperty('cssFloat');
   });
@@ -39,7 +39,7 @@ describe('parseKeyframesRule - property name conversion', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
     assert(result);
     expect(result.keyframes[0]).toHaveProperty('--my-color');
   });
@@ -52,7 +52,7 @@ describe('parseKeyframesRule - property name conversion', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
     assert(result);
     // Browser may normalize -webkit- properties; check that the result is valid camelCase
     const keys = Object.keys(result.keyframes[0]).filter(k => k !== 'offset');
@@ -71,7 +71,7 @@ describe('parseKeyframesRule - property name conversion', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
     assert(result);
     expect(result.keyframes[0]).toHaveProperty('borderTopLeftRadius');
   });
@@ -79,7 +79,7 @@ describe('parseKeyframesRule - property name conversion', () => {
 });
 
 
-describe('parseKeyframesRule - offset conversion', () => {
+describe('convertKeyframesRule - offset conversion', () => {
 
   it('converts percentage to offset (0-1 range)', async () => {
     const sheet = await createStyleSheet(`
@@ -92,7 +92,7 @@ describe('parseKeyframesRule - offset conversion', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
     assert(result);
     const offsets = result.keyframes.map(k => k.offset);
     expect(offsets).toEqual([0, 0.25, 0.5, 0.75, 1]);
@@ -106,7 +106,7 @@ describe('parseKeyframesRule - offset conversion', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
     assert(result);
     expect(result.keyframes[0]).toMatchObject({
       offset: 0,

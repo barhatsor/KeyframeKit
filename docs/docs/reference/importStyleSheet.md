@@ -1,4 +1,4 @@
-[KeyframeKit](../index.md) / [KeyframesFactory](../KeyframesFactory.md) / importStyleSheet
+[KeyframeKit](index.md) / importStyleSheet
 
 # <div class="subheader"> Function</div> importStyleSheet()
 
@@ -22,7 +22,7 @@ The URL of the stylesheet to import.
 
 ## Throws
 
-- `TypeError` &nbsp;
+- `TypeError`
    - Thrown if the stylesheet could not be imported.
 
 ## Remarks

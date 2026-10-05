@@ -18,14 +18,14 @@ export default defineConfig([
         file: 'dist/index.js',
         format: 'esm',
         sourcemap: true,
-        banner: banner,
+        banner,
         generatedCode: 'es2015'
       },
       {
         file: 'dist/index.min.js',
         format: 'esm',
         sourcemap: true,
-        banner: banner,
+        banner,
         generatedCode: 'es2015',
         plugins: [terser({
           compress: { passes: 2 }
@@ -39,7 +39,7 @@ export default defineConfig([
     output: {
       file: 'dist/index.d.ts',
       format: 'esm',
-      banner: banner
+      banner
     },
     plugins: [dts()]
   }

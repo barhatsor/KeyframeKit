@@ -2,53 +2,43 @@
 /**
  * Gets a document's stylesheets when it loads,
  * or immediately returns them if it's already loaded.
- * @param obj
- *  @param obj.document The document to get stylesheets from.
+ * @param document The document to get stylesheets from.
  * @group Sourcing Stylesheets
  */
-export async function getDocumentStyleSheetsOnLoad({ document = window.document }: {
-  document?: Document
-} = {}) {
+export async function getDocumentStyleSheetsOnLoad(
+  document = window.document
+) {
 
-  await waitForDocumentLoad({
-    document: document
-  });
+  await waitForDocumentLoad(document);
 
   return document.styleSheets;
 
 }
 
-async function waitForDocumentLoad({ document }: {
-  document: Document
-}) {
+async function waitForDocumentLoad(document: Document) {
 
-  const isLoaded = () => (document.readyState === 'complete');
+  const isLoaded = () => document.readyState === 'complete';
 
-  if (isLoaded()) return;
+  if (isLoaded())
+    return;
 
-  const { promise, signal, abort } = abortablePromise();
+  const { promise, resolve } = Promise.withResolvers<void>();
+  const cleanup = new AbortController();
 
-  // 'signal' removes listener after abortion
-  document.addEventListener('readystatechange', () => {
-    if (isLoaded()) abort();
-  }, { signal });
+  const onReadyStateChange = () => {
+    if (isLoaded())
+      resolve();
+  };
+
+  document.addEventListener(
+    'readystatechange',
+    onReadyStateChange,
+    { signal: cleanup.signal }
+  );
 
   await promise;
 
-}
-
-function abortablePromise() {
-
-  const abortController = new AbortController(),
-        signal = abortController.signal,
-        abort = abortController.abort.bind(abortController);
-
-  const { promise, resolve } = Promise.withResolvers<typeof signal.reason>();
-
-  signal.addEventListener(
-    'abort', () => resolve(signal.reason), { once: true }
-  );
-
-  return { promise, signal, abort };
+  // remove the listener
+  cleanup.abort();
 
 }

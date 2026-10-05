@@ -26,11 +26,17 @@ function convertItem(
 
   const items = inputItem.children?.map(convertItem);
 
-  const isCollapsible = (link && items);
-  const collapsedValue = isCollapsible ? false : undefined;
+  const isCollapsible = link !== undefined && items !== undefined;
+  let collapsedValue = isCollapsible ? false : undefined;
+
+  if (inputItem.title === 'Deprecated') {
+    collapsedValue = true;
+  }
+
+  const deprecatedBadge = (inputItem.isDeprecated ? ' <span class="deprecated"></span>' : '');
 
   let outputItem: DefaultTheme.SidebarItem = {
-    text: inputItem.title,
+    text: inputItem.title + deprecatedBadge,
     link: link,
     items: items,
     base: '/reference/',

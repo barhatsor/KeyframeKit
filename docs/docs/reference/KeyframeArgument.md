@@ -15,6 +15,5 @@ A keyframes object.
 
 ## See Also
 
-### References This
 - [KeyframeEffectParameters.constructor](KeyframeEffectParameters.md#constructor)
 - [KeyframeEffectParameters.keyframes](KeyframeEffectParameters.md#keyframes)

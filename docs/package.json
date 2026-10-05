@@ -7,9 +7,10 @@
     "build": "vitepress build",
     "preview": "vitepress preview",
     "typecheck": "vue-tsc",
-    "bump": "npm run reference && npm run playground:bumplib",
+    "bump": "npm run reference && npm run playground:bumplib && npm run generate-get-started",
     "reference": "typedoc",
-    "playground:bumplib": "mkdir -p ./docs/public/playground/KeyframeKit && cp -r ../dist ./docs/public/playground/KeyframeKit/"
+    "playground:bumplib": "mkdir -p ./docs/public/playground/KeyframeKit && cp -r ../dist ./docs/public/playground/KeyframeKit/",
+    "generate-get-started": "node scripts/generate-get-started.ts"
   },
   "dependencies": {
     "@shikijs/monaco": "^4.5.0",
@@ -18,11 +19,19 @@
     "vue": "^3.5.43"
   },
   "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^26.6.4",
+    "mdast-util-heading-range": "^4.0.0",
+    "mdast-util-to-markdown": "^2.2.0",
+    "mdast-util-to-string": "^4.0.0",
+    "remark": "^15.0.1",
+    "remark-frontmatter": "^5.0.0",
     "typedoc": "^0.28.20",
     "typedoc-plugin-markdown": "^4.13.1",
     "typedoc-plugin-mdn-links": "^5.1.1",
     "typedoc-plugin-no-inherit": "^1.6.1",
     "typescript": "^6.0.3",
+    "unist-util-visit": "^5.1.0",
     "vitepress": "^2.0.0-alpha.19",
     "vue-tsc": "^3.3.12"
   }
