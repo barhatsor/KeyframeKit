@@ -9,13 +9,15 @@ export function getDefaultExample({ isTouchDevice }: {
 const jsAnimActivateEvent = isTouchDevice ? 'touchstart' : 'mouseenter';
 const jsAnimDeactivateEvent = isTouchDevice ? 'touchend' : 'mouseleave';
 
-const js = `import KeyframeKit from 'keyframekit';
+const js = `import {
+  getDocumentStyleSheetsOnLoad, convertStyleSheetKeyframes
+} from 'keyframekit';
 
-const documentStyleSheets = await KeyframeKit.getDocumentStyleSheetsOnLoad();
+const documentStyleSheets = await getDocumentStyleSheetsOnLoad();
 
 // get animation keyframes from the document's stylesheets
 // and convert to Web Animations API keyframes
-const rotateAnimKeyframes = KeyframeKit.getStyleSheetKeyframes({
+const rotateAnimKeyframes = convertStyleSheetKeyframes({
   of: 'rotate',
   in: documentStyleSheets
 });

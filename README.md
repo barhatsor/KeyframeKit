@@ -14,7 +14,7 @@ A lightweight TypeScript library that converts CSS `@keyframes` animations into 
 
 ## Installation
 
-### NPM
+### npm
 ```sh
 npm install keyframekit
 ```
@@ -22,7 +22,7 @@ npm install keyframekit
 ### CDN
 Import the module directly:
 ```js
-import KeyframeKit from 'https://unpkg.com/keyframekit/dist/index.min.js'
+import * as KeyframeKit from 'https://unpkg.com/keyframekit/dist/index.min.js';
 ```
 
 ## Usage
@@ -36,13 +36,13 @@ In your CSS:
 
 Then, in JS:
 ```js
-import KeyframeKit from 'keyframekit';
+import { getDocumentStyleSheetsOnLoad, convertStyleSheetKeyframes } from 'keyframekit';
 
-const documentStyleSheets = await KeyframeKit.getDocumentStyleSheetsOnLoad();
+const documentStyleSheets = await getDocumentStyleSheetsOnLoad();
 
 // get animation keyframes from the document's stylesheets
 // and convert to Web Animations API keyframes
-const rotateSmallAnimKeyframes = KeyframeKit.getStyleSheetKeyframes({
+const rotateSmallAnimKeyframes = convertStyleSheetKeyframes({
   of: 'rotate-small',
   in: documentStyleSheets
 });
@@ -75,15 +75,15 @@ await attachedAnim.finished;
 Instead of getting an animation from the document's stylesheets, you can also import it directly from a CSS file.
 
 ```js
-import KeyframeKit from 'keyframekit';
+import { importStyleSheet, convertStyleSheetKeyframes } from 'keyframekit';
 
-const styles = await KeyframeKit.importStyleSheet('./styles.css');
+const styles = await importStyleSheet('./styles.css');
 // note: on Chrome, Edge or Firefox (not Safari), you can just write:
 // import styles from './styles.css' with { type: 'css' };
 
 // get animation keyframes from stylesheet
 // and convert to Web Animations API keyframes
-const rotateSmallAnimKeyframes = KeyframeKit.getStyleSheetKeyframes({
+const rotateSmallAnimKeyframes = convertStyleSheetKeyframes({
   of: 'rotate-small',
   in: styles
 });

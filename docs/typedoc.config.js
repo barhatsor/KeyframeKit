@@ -26,6 +26,10 @@ export default {
   "entryPoints": ["../src/index.ts"],
   "out": "docs/reference",
 
+  "groupOrder": [
+    "Sourcing Stylesheets", "Converting Stylesheet Keyframes", "Defining Animations", "Data Types", "Errors", "Deprecated"
+  ],
+
   "validation": {
     "notExported": false
   },
@@ -78,8 +82,6 @@ export default {
   "pageTitleTemplates": {
     "member": `<div class="subheader">{keyword} {kind}</div> {name}`
   },
-
-  "groupOrder": ["Default Export", "Sourcing Stylesheets", "Parsing Stylesheet Keyframes", "Data Types", "Errors"],
   
   "inheritNone": true,
 

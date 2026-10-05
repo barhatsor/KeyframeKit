@@ -1,11 +1,9 @@
-[KeyframeKit](../index.md) / [KeyframesFactory](../KeyframesFactory.md) / getDocumentStyleSheetsOnLoad
+[KeyframeKit](index.md) / getDocumentStyleSheetsOnLoad
 
 # <div class="subheader"> Function</div> getDocumentStyleSheetsOnLoad()
 
 ```ts
-function getDocumentStyleSheetsOnLoad(obj?: {
-  document?: Document;
-}): Promise<StyleSheetList>;
+function getDocumentStyleSheetsOnLoad(document?: Document): Promise<StyleSheetList>;
 ```
 
 Gets a document's stylesheets when it loads,
@@ -13,9 +11,7 @@ or immediately returns them if it's already loaded.
 
 ## Parameters
 
-### obj?
-
-#### document?
+### document?
 
 [`Document`](https://developer.mozilla.org/docs/Web/API/Document) = `window.document`
 

@@ -3,7 +3,7 @@
  * Imports a stylesheet from a URL.
  * @param url The URL of the stylesheet to import.
  * @throws
- *  - `TypeError` &nbsp;
+ *  - `TypeError`
  *    - Thrown if the stylesheet could not be imported.
  * @remarks
  *  - `@import` rules won't be resolved in imported stylesheets.
@@ -19,11 +19,8 @@ export async function importStyleSheet(url: string) {
 
   const resp = await fetch(url);
 
-  if (!resp.ok) {
-    throw new TypeError(
-      `Failed to fetch dynamically imported module: ${url}`
-    );
-  }
+  if (!resp.ok)
+    throw new TypeError(`Failed to fetch dynamically imported module: ${url}`);
 
   const respText = await resp.text();
 

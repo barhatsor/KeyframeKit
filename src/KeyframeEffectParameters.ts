@@ -30,8 +30,18 @@ export class KeyframeEffectParameters {
     keyframes: KeyframeArgument,
     options?: number | KeyframeEffectOptions
   }) {
+
     this.keyframes = keyframes;
-    this.options = this.#parseOptionsArg(options);
+    
+    const parsedOptions = parseOptionsArg(options);
+
+    // CSS defaults to 'ease', but the Web Animations API defaults to 'linear'
+    // https://drafts.csswg.org/web-animations-1/#dom-effecttiming-easing
+    if (!('easing' in parsedOptions))
+      parsedOptions.easing = 'ease';
+
+    this.options = parsedOptions;
+
   }
 
   /**
@@ -51,11 +61,12 @@ export class KeyframeEffectParameters {
     timeline?: AnimationTimeline | null
   }): Animation {
 
-    additionalOptions = this.#parseOptionsArg(additionalOptions);
+    const parsedAdditionalOptions = parseOptionsArg(additionalOptions);
 
     // override existing option keys with additional options
     const options: KeyframeEffectOptions = {
-      ...this.options, ...additionalOptions
+      ...this.options,
+      ...parsedAdditionalOptions
     };
 
 
@@ -74,16 +85,15 @@ export class KeyframeEffectParameters {
 
   }
 
-  /** - https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect-target-keyframes-options-options
-      - https://drafts.csswg.org/web-animations-1/#dom-effecttiming-duration */
-  #parseOptionsArg(options: number | KeyframeEffectOptions) {
+}
 
-    if (typeof options === 'number') {
-      return { duration: options };
-    }
-
-    return options;
-
-  }
-
+/**
+ * @see
+ * - https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect-target-keyframes-options-options
+ * - https://drafts.csswg.org/web-animations-1/#dom-effecttiming-duration
+ */
+function parseOptionsArg(optionsArg: number | KeyframeEffectOptions) {
+  if (typeof optionsArg === 'number')
+    return { duration: optionsArg };
+  return optionsArg;
 }

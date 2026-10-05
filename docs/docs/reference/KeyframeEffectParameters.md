@@ -104,7 +104,4 @@ options: KeyframeEffectOptions;
 
 ## See Also
 
-### Referenced Here
-- [KeyframeArgument](KeyframeArgument.md)
-### References This
-- [KeyframesFactory.ParsedKeyframes.toKeyframeEffect](KeyframesFactory/ParsedKeyframes.md#tokeyframeeffect)
+- [ConvertedKeyframes.toKeyframeEffect](ConvertedKeyframes.md#tokeyframeeffect)

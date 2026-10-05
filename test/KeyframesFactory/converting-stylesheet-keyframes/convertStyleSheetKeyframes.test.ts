@@ -1,9 +1,9 @@
 import { describe, it, expect, assert } from 'vitest';
-import KeyframeKit from '../../../src/index';
+import { convertStyleSheetKeyframes, ConvertedKeyframes } from '../../../src/index';
 import { createStyleSheet } from './createStyleSheet-helper';
 
 
-describe('getStyleSheetKeyframes', () => {
+describe('convertStyleSheetKeyframes', () => {
 
   it('extracts a named keyframes rule from a CSSStyleSheet', async () => {
     const sheet = await createStyleSheet(`
@@ -13,10 +13,10 @@ describe('getStyleSheetKeyframes', () => {
       }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'fadeIn', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'fadeIn', in: sheet });
 
     assert(result);
-    expect(result).toBeInstanceOf(KeyframeKit.ParsedKeyframes);
+    expect(result).toBeInstanceOf(ConvertedKeyframes);
     expect(result.keyframes).toHaveLength(2);
     expect(result.keyframes[0]).toMatchObject({ offset: 0, opacity: '0' });
     expect(result.keyframes[1]).toMatchObject({ offset: 1, opacity: '1' });
@@ -27,22 +27,22 @@ describe('getStyleSheetKeyframes', () => {
       @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
     `);
 
-    const result = KeyframeKit.getStyleSheetKeyframes({ of: 'doesNotExist', in: sheet });
+    const result = convertStyleSheetKeyframes({ of: 'doesNotExist', in: sheet });
     expect(result).toBeUndefined();
   });
 
-  it('throws KeyframesRuleNameTypeError for non-string rule name', async () => {
+  it('throws TypeError for non-string rule name', async () => {
     const sheet = await createStyleSheet('');
 
     expect(() => {
-      KeyframeKit.getStyleSheetKeyframes({ of: 123 as any, in: sheet });
-    }).toThrow(KeyframeKit.KeyframesRuleNameTypeError);
+      convertStyleSheetKeyframes({ of: 123 as any, in: sheet });
+    }).toThrow(TypeError);
   });
 
-  it('throws SourceTypeError for invalid source', () => {
+  it('throws TypeError for invalid source', () => {
     expect(() => {
-      KeyframeKit.getStyleSheetKeyframes({ of: 'test', in: {} as any });
-    }).toThrow(KeyframeKit.SourceTypeError);
+      convertStyleSheetKeyframes({ of: 'test', in: {} as any });
+    }).toThrow(TypeError);
   });
 
   it('searches through a StyleSheetList', async () => {
@@ -56,13 +56,13 @@ describe('getStyleSheetKeyframes', () => {
     document.head.appendChild(style);
 
     try {
-      const result = KeyframeKit.getStyleSheetKeyframes({
+      const result = convertStyleSheetKeyframes({
         of: 'slideIn',
         in: document.styleSheets
       });
 
       assert(result);
-      expect(result).toBeInstanceOf(KeyframeKit.ParsedKeyframes);
+      expect(result).toBeInstanceOf(ConvertedKeyframes);
       expect(result.keyframes).toHaveLength(2);
     } finally {
       document.head.removeChild(style);

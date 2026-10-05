@@ -1,32 +1,36 @@
 ---
 title: Get Started
+# Generated from /README.md by scripts/generate-get-started.ts. Edit the README instead.
 ---
 
 # KeyframeKit
 
 Unlock full playback control over your CSS animations with JavaScript.
 
-[![NPM version][npm-version-src]][npm-version-href] 
+[![NPM version][npm-version-src]][npm-version-href]
 [![NPM downloads][npm-downloads-src]][npm-downloads-href]
-[![Minified size][minified-size-src]][minified-size-href] 
+[![Minified size][minified-size-src]][minified-size-href]
 [![CI][ci-src]][ci-href]
 {class=badges}
 
 ## What is this?
 
-A lightweight TypeScript library that converts CSS `@keyframes` animations into [Web Animations API]-compatible animations, letting you play CSS-defined animations from JavaScript with full playback control and hardware-accelerated performance.  
+A lightweight TypeScript library that converts CSS `@keyframes` animations into [Web Animations API]-compatible animations, letting you play CSS-defined animations from JavaScript with full playback control and hardware-accelerated performance.\
 [Read more][KeyframeKit article] | [Live Demo]
 
 ## Installation
 
 ::: code-group
+
 ```sh [npm]
 npm install keyframekit
 ```
+
 ```js [CDN]
 /* Import the module directly: */
-import KeyframeKit from 'https://unpkg.com/keyframekit/dist/index.min.js'
+import * as KeyframeKit from 'https://unpkg.com/keyframekit/dist/index.min.js';
 ```
+
 :::
 
 ## Usage
@@ -34,19 +38,21 @@ import KeyframeKit from 'https://unpkg.com/keyframekit/dist/index.min.js'
 ### Playing CSS-defined animations with JS
 
 In your CSS:
+
 ```css
 @keyframes rotate-small { ... }
 ```
 
 Then, in JS:
-```js
-import KeyframeKit from 'keyframekit';
 
-const documentStyleSheets = await KeyframeKit.getDocumentStyleSheetsOnLoad();
+```js
+import { getDocumentStyleSheetsOnLoad, convertStyleSheetKeyframes } from 'keyframekit';
+
+const documentStyleSheets = await getDocumentStyleSheetsOnLoad();
 
 // get animation keyframes from the document's stylesheets
 // and convert to Web Animations API keyframes
-const rotateSmallAnimKeyframes = KeyframeKit.getStyleSheetKeyframes({
+const rotateSmallAnimKeyframes = convertStyleSheetKeyframes({
   of: 'rotate-small',
   in: documentStyleSheets
 });
@@ -66,12 +72,14 @@ attachedAnim.play();
 ```
 
 The primary reason to play your animation with JS is because you get way more control over its playback:
+
 ```js
 attachedAnim.pause();
 attachedAnim.playbackRate = -1;
 const progress = attachedAnim.overallProgress; // 0 to 1 (Baseline newly available)
 await attachedAnim.finished;
 ```
+
 [...and more.][Using the Web Animations API (MDN)]
 
 ### Importing animations directly from a CSS file
@@ -79,17 +87,17 @@ await attachedAnim.finished;
 Instead of getting an animation from the document's stylesheets, you can also import it directly from a CSS file.
 
 ```js
-import KeyframeKit from 'keyframekit';
+import { importStyleSheet, convertStyleSheetKeyframes } from 'keyframekit';
 
-const styleSheet = await KeyframeKit.importStyleSheet('./styles.css');
+const styles = await importStyleSheet('./styles.css');
 // note: on Chrome, Edge or Firefox (not Safari), you can just write:
 // import styles from './styles.css' with { type: 'css' };
 
 // get animation keyframes from stylesheet
 // and convert to Web Animations API keyframes
-const rotateSmallAnimKeyframes = KeyframeKit.getStyleSheetKeyframes({
+const rotateSmallAnimKeyframes = convertStyleSheetKeyframes({
   of: 'rotate-small',
-  in: styleSheet
+  in: styles
 });
 ```
 
@@ -97,7 +105,7 @@ const rotateSmallAnimKeyframes = KeyframeKit.getStyleSheetKeyframes({
 
 ### Defining animations in JS
 
-The [`KeyframeEffectParameters`] class provides a more convenient way to define your animations in JS than is offered natively.  
+The [`KeyframeEffectParameters`] class provides a more convenient way to define your animations in JS than is offered natively.\
 It's useful for when you want to have all your animation code in one place.
 
 ```js
@@ -137,8 +145,8 @@ attachedAnim.play();
 
 [MIT][KeyframeKit License]
 
-
 <!-- References -->
+
 [Web Animations API]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API
 [KeyframeKit article]: https://barhatsor.medium.com/99573ef4738b
 [Live Demo]: https://codepen.io/barhatsor/pen/JoRPNmz
@@ -149,6 +157,7 @@ attachedAnim.play();
 [KeyframeKit License]: https://github.com/barhatsor/KeyframeKit/blob/main/LICENSE
 
 <!-- Badges -->
+
 [npm-version-src]: https://img.shields.io/npm/v/keyframekit.svg
 [npm-version-href]: https://www.npmjs.com/package/keyframekit
 [npm-downloads-src]: https://img.shields.io/npm/d18m/keyframekit

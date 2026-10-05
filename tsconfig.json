@@ -2,6 +2,8 @@
   "compilerOptions": {
     // necessary for @rollup/plugin-typescript (see https://github.com/rollup/plugins/pull/2004)
     "moduleResolution": "bundler",
+    // necessary for rollup-dts-bundler (in API Extractor)
+    "target": "esnext",
 
     "moduleDetection": "force",
 
@@ -11,13 +13,12 @@
     "verbatimModuleSyntax": true,
 
     "noImplicitReturns": true,
-    "exactOptionalPropertyTypes": true,
     "noPropertyAccessFromIndexSignature": true,
 
     "erasableSyntaxOnly": true,
 
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
   },
   "include": ["src"]
 }

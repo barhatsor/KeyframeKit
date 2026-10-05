@@ -9,7 +9,7 @@ describe('KeyframeEffectParameters', () => {
     const params = new KeyframeEffectParameters({ keyframes: kf, options: 1000 });
 
     expect(params.keyframes).toBe(kf);
-    expect(params.options).toEqual({ duration: 1000 });
+    expect(params.options).toEqual({ duration: 1000, easing: 'ease' });
   });
 
   it('stores object options directly', () => {
@@ -19,13 +19,13 @@ describe('KeyframeEffectParameters', () => {
       options: { duration: 500, iterations: 3 }
     });
 
-    expect(params.options).toEqual({ duration: 500, iterations: 3 });
+    expect(params.options).toEqual({ duration: 500, iterations: 3, easing: 'ease' });
   });
 
-  it('defaults options to empty object', () => {
+  it('defaults options to object with the default easing option', () => {
     const kf = [{ offset: 0 }, { offset: 1 }];
     const params = new KeyframeEffectParameters({ keyframes: kf });
-    expect(params.options).toEqual({});
+    expect(params.options).toEqual({ easing: 'ease' });
   });
 
   it('toAnimation creates an Animation object', () => {

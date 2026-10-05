@@ -2,57 +2,86 @@
  * KeyframeKit
  * @license MIT
  */
-/** @group Data Types */
-declare type CSSStyleSheetSource = CSSStyleSheet | StyleSheetList;
-
 /**
  * Gets all the CSS keyframes rules in a stylesheet or stylesheet list,
  * then converts them to Web Animations API keyframes.
  * @param obj
  *  @param obj.in The style sheet or style sheet list to get keyframes from.
  * @throws
- *  - {@linkcode SourceTypeError} &nbsp;
+ *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
- * @group Parsing Stylesheet Keyframes
+ * @group Converting Stylesheet Keyframes
  */
-declare function getAllStyleSheetKeyframesRules({ in: source }: {
+export declare function convertAllStyleSheetKeyframesRules({ in: source }: {
     in: CSSStyleSheetSource;
-}): ParsedKeyframesRules;
+}): ConvertedKeyframesRules;
 
 /**
- * Gets a document's stylesheets when it loads,
- * or immediately returns them if it's already loaded.
- * @param obj
- *  @param obj.document The document to get stylesheets from.
- * @group Sourcing Stylesheets
+ * Web Animations API keyframes converted with the factory functions.
+ *
+ * Call {@linkcode toKeyframeEffect} to create an animation from them.
+ * @group Data Types
  */
-declare function getDocumentStyleSheetsOnLoad({ document }?: {
-    document?: Document;
-}): Promise<StyleSheetList>;
+export declare class ConvertedKeyframes {
+    keyframes: Keyframe[];
+    constructor(keyframes: Keyframe[]);
+    /**
+     * @param options Keyframe effect options.
+     *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#options)
+     */
+    toKeyframeEffect(options: number | KeyframeEffectOptions | null): KeyframeEffectParameters;
+}
 
 /**
- * Gets a CSS keyframes rule from a stylesheet or stylesheet list,
- * then converts it to Web Animations API keyframes.
+ * Maps CSS keyframes rule names to their converted Web Animations API keyframes.
+ * @group Data Types
+ */
+export declare type ConvertedKeyframesRules = Map<string, ConvertedKeyframes>;
+
+/**
+ * Converts a CSS keyframes rule to Web Animations API keyframes.
+ * @param keyframesRule The rule to convert.
+ * @group Converting Stylesheet Keyframes
+ */
+export declare function convertKeyframesRule(keyframesRule: CSSKeyframesRule): ConvertedKeyframes;
+
+/**
+ * Converts a CSS keyframes rule from a stylesheet (or stylesheet list)
+ * into Web Animations API keyframes.
  * @param obj
  *  @param obj.of The name of the `@keyframes` rule to get keyframes from.
  *  @param obj.in The stylesheet or stylesheet list where the rule resides.
  * @throws
- *  - {@linkcode KeyframesRuleNameTypeError} &nbsp;
+ *  - `TypeError`
  *    - Thrown if keyframes rule name is not a string.
- *  - {@linkcode SourceTypeError} &nbsp;
+ *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
- * @group Parsing Stylesheet Keyframes
+ * @group Converting Stylesheet Keyframes
  */
-declare function getStyleSheetKeyframes({ of: ruleName, in: source }: {
+export declare function convertStyleSheetKeyframes({ of: ruleName, in: source }: {
     of: string;
     in: CSSStyleSheetSource;
-}): ParsedKeyframes | undefined;
+}): ConvertedKeyframes | undefined;
+
+/**
+ * A stylesheet or stylesheet list.
+ * @group Data Types
+ */
+export declare type CSSStyleSheetSource = CSSStyleSheet | StyleSheetList;
+
+/**
+ * Gets a document's stylesheets when it loads,
+ * or immediately returns them if it's already loaded.
+ * @param document The document to get stylesheets from.
+ * @group Sourcing Stylesheets
+ */
+export declare function getDocumentStyleSheetsOnLoad(document?: Document): Promise<StyleSheetList>;
 
 /**
  * Imports a stylesheet from a URL.
  * @param url The URL of the stylesheet to import.
  * @throws
- *  - `TypeError` &nbsp;
+ *  - `TypeError`
  *    - Thrown if the stylesheet could not be imported.
  * @remarks
  *  - `@import` rules won't be resolved in imported stylesheets.
@@ -64,7 +93,7 @@ declare function getStyleSheetKeyframes({ of: ruleName, in: source }: {
  *  - [import() return value - MDN Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import#return_value)
  * @group Sourcing Stylesheets
  */
-declare function importStyleSheet(url: string): Promise<CSSStyleSheet>;
+export declare function importStyleSheet(url: string): Promise<CSSStyleSheet>;
 
 /**
  * A keyframes object.
@@ -82,7 +111,6 @@ export declare type KeyframeArgument = Keyframe[] | PropertyIndexedKeyframes;
  * @group Defining Animations
  */
 export declare class KeyframeEffectParameters {
-    #private;
     keyframes: KeyframeArgument;
     options: KeyframeEffectOptions;
     /**
@@ -116,62 +144,16 @@ export declare class KeyframeEffectParameters {
 
 declare namespace KeyframesFactory {
     export {
-        KeyframesRuleNameTypeError,
-        SourceTypeError,
         getDocumentStyleSheetsOnLoad,
         importStyleSheet,
-        getStyleSheetKeyframes,
-        getAllStyleSheetKeyframesRules,
-        parseKeyframesRule,
-        ParsedKeyframes,
-        ParsedKeyframesRules,
+        convertStyleSheetKeyframes,
+        convertAllStyleSheetKeyframesRules,
+        convertKeyframesRule,
+        ConvertedKeyframes,
+        ConvertedKeyframesRules,
         CSSStyleSheetSource
     }
 }
 export default KeyframesFactory;
-
-/**
- * Thrown if keyframes rule name is not a string.
- * @see
- *  - {@linkcode getStyleSheetKeyframes}
- * @group Errors
- */
-declare class KeyframesRuleNameTypeError extends TypeError {
-    message: string;
-}
-
-/** @group Data Types */
-declare class ParsedKeyframes {
-    keyframes: Keyframe[];
-    constructor(keyframes: Keyframe[]);
-    /**
-     * @param options Keyframe effect options.
-     *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#options)
-     */
-    toKeyframeEffect(options: number | KeyframeEffectOptions | null): KeyframeEffectParameters;
-}
-
-/** @group Data Types */
-declare type ParsedKeyframesRules = {
-    [ruleName: string]: ParsedKeyframes;
-};
-
-/**
- * Converts a CSS keyframes rule to Web Animations API keyframes.
- * @param keyframesRule The rule to convert.
- * @group Parsing Stylesheet Keyframes
- */
-declare function parseKeyframesRule(keyframesRule: CSSKeyframesRule): ParsedKeyframes;
-
-/**
- * Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
- * @see
- *  - {@linkcode getStyleSheetKeyframes}
- *  - {@linkcode getAllStyleSheetKeyframesRules}
- * @group Errors
- */
-declare class SourceTypeError extends TypeError {
-    message: string;
-}
 
 export { }
