@@ -1,0 +1,30 @@
+diff --git a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
+index b3f75e0..bea5a23 100644
+--- a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
++++ b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
+@@ -413,16 +413,19 @@ ${tagToString(tag)}`;
+ }
+ function tagToString(tag) {
+   let tagLabel = `*@${tag.name}*`;
++  let text;
+   if (tag.name === "param" && tag.text) {
+     const [paramName, ...rest] = tag.text;
+-    tagLabel += `\`${paramName.text}\``;
+-    if (rest.length > 0) tagLabel += ` \u2014 ${rest.map((r) => r.text).join(" ")}`;
++    tagLabel += ` \`${paramName.text}\``;
++    text = rest.map((r) => r.text).join("");
+   } else if (Array.isArray(tag.text)) {
+-    tagLabel += ` \u2014 ${tag.text.map((r) => r.text).join(" ")}`;
+-  } else if (tag.text) {
+-    tagLabel += ` \u2014 ${tag.text}`;
++    text = tag.text.map((r) => r.text).join("");
++  } else {
++    text = tag.text;
+   }
+-  return tagLabel;
++  text = text?.trim();
++  if (!text) return tagLabel;
++  return tagLabel + (/\r\n|\n/.test(text) ? `  \n${text}` : ` \u2014 ${text}`);
+ }
+ class SignatureHelpAdapter extends Adapter {
+   constructor() {

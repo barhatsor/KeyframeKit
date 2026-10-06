@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig, postcssIsolateStyles } from 'vitepress'
 
 import referenceNavigationItems from './referenceNavigation.js';
 
@@ -137,6 +137,17 @@ export default defineConfig({
       }
     ]);
     
+  },
+
+  vite: {
+    css: {
+      postcss: {
+        // scope the default theme's doc styles to exclude
+        // `.vp-raw` subtrees, such as the playground's editor
+        // https://vitepress.dev/guide/markdown#raw
+        plugins: [postcssIsolateStyles()]
+      }
+    }
   },
 
   // fix vue parsing errors in code blocks

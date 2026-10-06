@@ -3,7 +3,8 @@
     <div class="editor-pane">
       <PlaygroundTabs v-model="activeTab" :tabs="TABS" />
       <div class="editor-container">
-        <div ref="editorEl" class="editor-mount" />
+        <!-- vp-raw: keep the theme's doc styles out of monaco (see `postcssIsolateStyles` in config.ts) -->
+        <div ref="editorEl" class="editor-mount vp-raw" />
         <PlaygroundLoader v-if="!isReady" />
       </div>
     </div>

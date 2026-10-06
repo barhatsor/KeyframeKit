@@ -8,28 +8,26 @@
   display: none;
 }
 
-
-/* override vitepress theme style for '.vp-doc a' in monaco editor
-   (it messes up the autocomplete styles) */
-.vp-doc .monaco-editor a {
-  transition: unset;
-  text-decoration: unset;
-  text-underline-offset: unset;
-  font-weight: unset;
-  color: inherit;
+/* monaco expects its host page to remove link underlines,
+   as VS Code's workbench does (`.monaco-workbench a`) */
+.monaco-editor a {
+  text-decoration: none;
 }
 
-.vp-doc .monaco-editor a:hover {
-  color: inherit;
+/* monaco's standalone-tokens.css zeroes hover paragraph margins,
+   which VS Code keeps at 8px (hoverWidget.css) to space out JSDoc tags */
+.monaco-editor .monaco-hover p:not(:first-child) {
+  margin-top: 8px;
 }
 
-.vp-doc .monaco-editor :not(pre, h1, h2, h3, h4, h5, h6) > code {
-  font-size: unset;
-  color: inherit;
-}
-
-.vp-doc .monaco-editor li+li {
-  margin-top: 0;
+@media (hover: none) {
+  .monaco-editor .monaco-scrollable-element > .scrollbar {
+    background: transparent;
+  }
+  .monaco-editor .monaco-scrollable-element > .scrollbar > .slider {
+    border-radius: 2px;
+    background: var(--vscode-scrollbarSlider-activeBackground);
+  }
 }
 
 

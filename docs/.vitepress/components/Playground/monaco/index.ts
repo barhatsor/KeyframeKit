@@ -27,6 +27,25 @@ function setupKeyframeKitTypes(dtsSource: string) {
   )
 }
 
+/**
+ * VitePress opens search when "/" is pressed on the page, unless the key's
+ * target is an input, textarea or contenteditable. In Chromium, monaco takes
+ * input through an EditContext <div>, which is none of those, so "/" would
+ * open search instead of being typed. VitePress listens on `window`, so we
+ * stop "/" at the container, after monaco's own handlers have seen it.
+ */
+function keepSearchShortcutOut(container: HTMLElement): monaco.IDisposable {
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === '/') event.stopPropagation()
+  }
+
+  container.addEventListener('keydown', onKeyDown)
+
+  return {
+    dispose: () => container.removeEventListener('keydown', onKeyDown)
+  }
+}
+
 function createModel(value: string, language: string, uriStr: string) {
   const uri = monaco.Uri.parse(uriStr)
 
@@ -68,7 +87,13 @@ export async function createPlayground(
     tabSize: 2,
     lineNumbers: 'off',
     scrollbar: {
-      ignoreHorizontalScrollbarInContentHeight: true
+      ignoreHorizontalScrollbarInContentHeight: true,
+      ...(isTouchDevice ? {
+        verticalScrollbarSize: 10,
+        verticalSliderSize: 4,
+        horizontalScrollbarSize: 10,
+        horizontalSliderSize: 4
+      } : {})
     },
     lightbulb: {
       enabled: monaco.editor.ShowLightbulbIconMode.Off
@@ -83,11 +108,13 @@ export async function createPlayground(
       stickyScroll: { enabled: false },
       wordWrap: 'on',
       wordWrapIndicator: true,
-      acceptSuggestionOnEnter: 'off'
+      acceptSuggestionOnEnter: 'off',
+      overviewRulerLanes: 0
     } : {})
   })
 
   const touchTargets = retainTouchTargets(editor)
+  const searchShortcut = keepSearchShortcutOut(container)
 
   let currentTab: Tab = 'JS'
   const viewStates: Partial<Record<Tab, monaco.editor.ICodeEditorViewState | null>> = {}
@@ -112,6 +139,7 @@ export async function createPlayground(
 
     dispose() {
       touchTargets.dispose()
+      searchShortcut.dispose()
       editor.dispose()
       Object.values(models).forEach(model => model.dispose())
       dtsLib.dispose()
