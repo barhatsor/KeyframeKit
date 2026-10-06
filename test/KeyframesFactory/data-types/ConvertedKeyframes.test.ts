@@ -28,14 +28,14 @@ describe('ParsedKeyframes', () => {
   it('toKeyframeEffect with number option uses it as duration', () => {
     const parsed = new ConvertedKeyframes([{ offset: 0 }, { offset: 1 }]);
     const effect = parsed.toKeyframeEffect(300);
-    expect(effect.options).toEqual({ duration: 300, easing: 'ease' });
+    expect(effect.options).toEqual({ duration: 300 });
   });
 
-  it('toKeyframeEffect with null creates effect with the default easing option', () => {
+  it('toKeyframeEffect with null creates effect with empty options', () => {
     const parsed = new ConvertedKeyframes([{ offset: 0 }, { offset: 1 }]);
     const effect = parsed.toKeyframeEffect(null);
     expect(effect).toBeInstanceOf(KeyframeEffectParameters);
-    expect(effect.options).toEqual({ easing: 'ease' });
+    expect(effect.options).toEqual({});
   });
 
 });

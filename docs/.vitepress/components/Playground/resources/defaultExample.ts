@@ -24,8 +24,7 @@ const rotateAnimKeyframes = convertStyleSheetKeyframes({
 
 // then, define your animation
 const rotateAnim = rotateAnimKeyframes.toKeyframeEffect({
-  duration: 700,
-  easing: 'ease'
+  duration: 700
 });
 
 // finally, attach it to your elements:

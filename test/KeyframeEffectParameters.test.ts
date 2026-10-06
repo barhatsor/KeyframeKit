@@ -9,7 +9,7 @@ describe('KeyframeEffectParameters', () => {
     const params = new KeyframeEffectParameters({ keyframes: kf, options: 1000 });
 
     expect(params.keyframes).toBe(kf);
-    expect(params.options).toEqual({ duration: 1000, easing: 'ease' });
+    expect(params.options).toEqual({ duration: 1000 });
   });
 
   it('stores object options directly', () => {
@@ -19,13 +19,26 @@ describe('KeyframeEffectParameters', () => {
       options: { duration: 500, iterations: 3 }
     });
 
-    expect(params.options).toEqual({ duration: 500, iterations: 3, easing: 'ease' });
+    expect(params.options).toEqual({ duration: 500, iterations: 3 });
   });
 
-  it('defaults options to object with the default easing option', () => {
+  it('defaults options to empty object', () => {
     const kf = [{ offset: 0 }, { offset: 1 }];
     const params = new KeyframeEffectParameters({ keyframes: kf });
-    expect(params.options).toEqual({ easing: 'ease' });
+    expect(params.options).toEqual({});
+  });
+
+  it('does not modify the options object', () => {
+    const options = { duration: 500 };
+    new KeyframeEffectParameters({ keyframes: [], options });
+    expect(options).toEqual({ duration: 500 });
+  });
+
+  it('leaves the effect easing to the Web Animations API default', () => {
+    const params = new KeyframeEffectParameters({ keyframes: [], options: 500 });
+
+    const anim = params.toAnimation({ target: document.createElement('div') });
+    expect(anim.effect!.getTiming().easing).toBe('linear');
   });
 
   it('toAnimation creates an Animation object', () => {

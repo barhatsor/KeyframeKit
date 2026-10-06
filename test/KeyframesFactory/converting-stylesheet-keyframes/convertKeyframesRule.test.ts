@@ -116,3 +116,75 @@ describe('convertKeyframesRule - offset conversion', () => {
   });
 
 });
+
+
+describe('convertKeyframesRule - easing', () => {
+
+  it('converts animation-timing-function to keyframe easing', async () => {
+    const sheet = await createStyleSheet(`
+      @keyframes test {
+        0% { opacity: 0; animation-timing-function: steps(2); }
+        100% { opacity: 1; }
+      }
+    `);
+
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
+    assert(result);
+    expect(result.keyframes[0]).toEqual({ offset: 0, opacity: '0', easing: 'steps(2)' });
+  });
+
+  it('defaults keyframe easing to ease, like CSS', async () => {
+    const sheet = await createStyleSheet(`
+      @keyframes test {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+    `);
+
+    const result = convertStyleSheetKeyframes({ of: 'test', in: sheet });
+    assert(result);
+    expect(result.keyframes.map(k => k.easing)).toEqual(['ease', 'ease']);
+  });
+
+  it('plays back like the CSS animation', async () => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes test {
+        0% { opacity: 0; }
+        49.99% { opacity: 1; animation-timing-function: ease-in; }
+        50% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      .css-anim { animation: test 1000ms paused; }
+    `;
+    document.head.appendChild(style);
+
+    const cssEl = document.createElement('div');
+    cssEl.className = 'css-anim';
+    const convertedEl = document.createElement('div');
+    document.body.append(cssEl, convertedEl);
+
+    try {
+      const cssAnim = cssEl.getAnimations()[0];
+      assert(cssAnim);
+
+      const result = convertStyleSheetKeyframes({ of: 'test', in: document.styleSheets });
+      assert(result);
+      const convertedAnim = result.toKeyframeEffect(1000).toAnimation({ target: convertedEl });
+      convertedAnim.pause();
+
+      const opacity = (el: Element) => Number(getComputedStyle(el).opacity);
+
+      for (const time of [100, 250, 400, 499, 501, 600, 750, 900]) {
+        cssAnim.currentTime = time;
+        convertedAnim.currentTime = time;
+        expect(opacity(convertedEl), `at ${time}ms`).toBeCloseTo(opacity(cssEl), 3);
+      }
+    } finally {
+      style.remove();
+      cssEl.remove();
+      convertedEl.remove();
+    }
+  });
+
+});
