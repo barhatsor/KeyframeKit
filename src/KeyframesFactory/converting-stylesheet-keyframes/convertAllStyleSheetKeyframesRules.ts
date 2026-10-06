@@ -20,6 +20,8 @@ import { isStyleSheetAccessible } from './isStyleSheetAccessible';
  *  - If multiple rules have the same name, the last one is used, like in CSS.
  *  - When reading a `StyleSheetList`, stylesheets whose rules can't be read
  *    are skipped.
+ *  - Only top-level rules are read: `@keyframes` rules nested in other rules
+ *    (e.g. `@media`, `@supports` or `@layer`) aren't found.
  * @group Converting Stylesheet Keyframes
  */
 export function convertAllStyleSheetKeyframesRules({ in: source }: {
