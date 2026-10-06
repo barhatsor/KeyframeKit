@@ -1,3 +1,56 @@
+diff --git a/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js b/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js
+index ecf40c1..56c9e25 100644
+--- a/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js
++++ b/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js
+@@ -1,7 +1,7 @@
+ import { ResizableHTMLElement } from '../../../../base/browser/ui/resizable/resizable.js';
+ import { Disposable } from '../../../../base/common/lifecycle.js';
+ import { Position } from '../../../common/core/position.js';
+-import { Dimension, getDomNodePagePosition, getClientArea } from '../../../../base/browser/dom.js';
++import { Dimension, getClientArea } from '../../../../base/browser/dom.js';
+ 
+ /*---------------------------------------------------------------------------------------------
+  *  Copyright (c) Microsoft Corporation. All rights reserved.
+@@ -50,7 +50,8 @@ class ResizableContentWidget extends Disposable {
+         if (!editorDomNode || !mouseBox) {
+             return;
+         }
+-        const editorBox = getDomNodePagePosition(editorDomNode);
++        // viewport-relative, like the space below
++        const editorBox = editorDomNode.getBoundingClientRect();
+         return editorBox.top + mouseBox.top - TOP_HEIGHT;
+     }
+     _availableVerticalSpaceBelow(position) {
+@@ -59,7 +60,8 @@ class ResizableContentWidget extends Disposable {
+         if (!editorDomNode || !mouseBox) {
+             return;
+         }
+-        const editorBox = getDomNodePagePosition(editorDomNode);
++        // viewport-relative, like `bodyBox`
++        const editorBox = editorDomNode.getBoundingClientRect();
+         const bodyBox = getClientArea(editorDomNode.ownerDocument.body);
+         const mouseBottom = editorBox.top + mouseBox.top + mouseBox.height;
+         return bodyBox.height - mouseBottom - BOTTOM_HEIGHT;
+diff --git a/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js b/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js
+index e903c70..6757b1c 100644
+--- a/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js
++++ b/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js
+@@ -1,4 +1,4 @@
+-import { Dimension, append, $, trackFocus, addStandardDisposableListener, hide, show, runAtThisOrScheduleAtNextAnimationFrame, getWindow, getClientArea, getDomNodePagePosition } from '../../../../base/browser/dom.js';
++import { Dimension, append, $, trackFocus, addStandardDisposableListener, hide, show, runAtThisOrScheduleAtNextAnimationFrame, getWindow, getClientArea } from '../../../../base/browser/dom.js';
+ import '../../../../base/browser/ui/codicons/codicon/codicon.css';
+ import '../../../../base/browser/ui/codicons/codicon/codicon-modifiers.css';
+ import { List } from '../../../../base/browser/ui/list/listWidget.js';
+@@ -741,7 +741,8 @@ let SuggestWidget = class SuggestWidget {
+             // height math
+             const fullHeight = info.statusBarHeight + this._list.contentHeight + info.borderHeight;
+             const minHeight = info.itemHeight + info.statusBarHeight;
+-            const editorBox = getDomNodePagePosition(this.editor.getDomNode());
++            // viewport-relative, like `bodyBox`
++            const editorBox = this.editor.getDomNode().getBoundingClientRect();
+             const cursorBox = this.editor.getScrolledVisiblePosition(this.editor.getPosition());
+             const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
+             const maxHeightBelow = Math.min(bodyBox.height - cursorBottom - info.verticalPadding, fullHeight);
 diff --git a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
 index b3f75e0..bea5a23 100644
 --- a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
