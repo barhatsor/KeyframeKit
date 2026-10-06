@@ -26,11 +26,11 @@ describe('convertAllStyleSheetKeyframesRules', () => {
     expect(result.get('slideUp')).toBeInstanceOf(ConvertedKeyframes);
   });
 
-  it('returns empty object when no keyframes rules exist', async () => {
+  it('returns empty map when no keyframes rules exist', async () => {
     const sheet = await createStyleSheet('.foo { color: red; }');
 
     const result = convertAllStyleSheetKeyframesRules({ in: sheet });
-    expect(Object.keys(result)).toHaveLength(0);
+    expect(result.size).toBe(0);
   });
 
   it('uses the last of multiple rules with the same name', async () => {
