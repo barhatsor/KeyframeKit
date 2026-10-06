@@ -123,7 +123,7 @@ class ConvertedKeyframes {
      * @param options Keyframe effect options.
      *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#options)
      *
-     *  To ease like CSS, leave out `easing`. If you set it, it eases the whole
+     *  Note: to ease like CSS, leave out `easing`. If you set it, it eases the whole
      *  animation at once, on top of each keyframe's easing.
      */
     toKeyframeEffect(options) {
