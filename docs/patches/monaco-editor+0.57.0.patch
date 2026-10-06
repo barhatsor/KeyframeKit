@@ -52,10 +52,10 @@ index e903c70..6757b1c 100644
              const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
              const maxHeightBelow = Math.min(bodyBox.height - cursorBottom - info.verticalPadding, fullHeight);
 diff --git a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
-index b3f75e0..bea5a23 100644
+index b3f75e0..8e6b1c9 100644
 --- a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
 +++ b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
-@@ -413,16 +413,19 @@ ${tagToString(tag)}`;
+@@ -413,16 +413,20 @@ ${tagToString(tag)}`;
  }
  function tagToString(tag) {
    let tagLabel = `*@${tag.name}*`;
@@ -65,7 +65,7 @@ index b3f75e0..bea5a23 100644
 -    tagLabel += `\`${paramName.text}\``;
 -    if (rest.length > 0) tagLabel += ` \u2014 ${rest.map((r) => r.text).join(" ")}`;
 +    tagLabel += ` \`${paramName.text}\``;
-+    text = rest.map((r) => r.text).join("");
++    text = rest.map((r) => r.text).join("").replace(/^\s*-?\s*/, "");
    } else if (Array.isArray(tag.text)) {
 -    tagLabel += ` \u2014 ${tag.text.map((r) => r.text).join(" ")}`;
 -  } else if (tag.text) {
