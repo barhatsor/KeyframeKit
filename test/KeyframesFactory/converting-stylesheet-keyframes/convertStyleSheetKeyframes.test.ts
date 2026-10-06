@@ -1,6 +1,7 @@
 import { describe, it, expect, assert } from 'vitest';
 import { convertStyleSheetKeyframes, ConvertedKeyframes } from '../../../src/index';
 import { createStyleSheet } from './createStyleSheet-helper';
+import { appendUnreadableStyleSheet } from './appendUnreadableStyleSheet-helper';
 
 
 describe('convertStyleSheetKeyframes', () => {
@@ -66,6 +67,48 @@ describe('convertStyleSheetKeyframes', () => {
       expect(result.keyframes).toHaveLength(2);
     } finally {
       document.head.removeChild(style);
+    }
+  });
+
+  it('skips unreadable stylesheets in a StyleSheetList', () => {
+    const unreadableStyle = appendUnreadableStyleSheet(`
+      @keyframes unreadable { 0% { opacity: 0; } 100% { opacity: 1; } }
+    `);
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+    `;
+    document.head.appendChild(style);
+
+    try {
+      const result = convertStyleSheetKeyframes({
+        of: 'fadeIn',
+        in: document.styleSheets
+      });
+
+      assert(result);
+      expect(result.keyframes).toHaveLength(2);
+    } finally {
+      unreadableStyle.remove();
+      style.remove();
+    }
+  });
+
+  it('throws SecurityError for an unreadable CSSStyleSheet', () => {
+    const unreadableStyle = appendUnreadableStyleSheet(`
+      @keyframes unreadable { 0% { opacity: 0; } 100% { opacity: 1; } }
+    `);
+
+    try {
+      assert(unreadableStyle.sheet);
+      const sheet = unreadableStyle.sheet;
+
+      expect(() => {
+        convertStyleSheetKeyframes({ of: 'unreadable', in: sheet });
+      }).toThrow(expect.objectContaining({ name: 'SecurityError' }));
+    } finally {
+      unreadableStyle.remove();
     }
   });
 

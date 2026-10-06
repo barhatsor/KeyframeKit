@@ -2,6 +2,7 @@
 import type { ConvertedKeyframesRules } from '../data-types/ConvertedKeyframes';
 import type { CSSStyleSheetSource } from '../data-types/CSSStyleSheetSource';
 import { convertKeyframesRule } from './convertKeyframesRule';
+import { isStyleSheetAccessible } from './isStyleSheetAccessible';
 
 
 /**
@@ -12,6 +13,12 @@ import { convertKeyframesRule } from './convertKeyframesRule';
  * @throws
  *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
+ *  - `SecurityError`
+ *    - Thrown if source is a `CSSStyleSheet` whose rules can't be read
+ *      (e.g. a cross-origin stylesheet loaded without CORS).
+ * @remarks
+ *  - When reading a `StyleSheetList`, stylesheets whose rules can't be read
+ *    are skipped.
  * @group Converting Stylesheet Keyframes
  */
 export function convertAllStyleSheetKeyframesRules({ in: source }: {
@@ -36,6 +43,9 @@ function convertAllStyleSheetKeyframesRulesInStyleSheetList(
   const keyframesRules: ConvertedKeyframesRules = new Map();
 
   for (const styleSheet of styleSheetList) {
+
+    if (!isStyleSheetAccessible(styleSheet))
+      continue;
 
     const rules = convertAllStyleSheetKeyframesRulesInStyleSheet(styleSheet);
 
