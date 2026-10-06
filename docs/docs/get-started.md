@@ -59,8 +59,7 @@ const rotateSmallAnimKeyframes = convertStyleSheetKeyframes({
 
 // then, define your animation
 const rotateSmallAnim = rotateSmallAnimKeyframes.toKeyframeEffect({
-  duration: 700,
-  easing: 'ease'
+  duration: 700
 });
 
 // finally, attach it to an element:
@@ -119,12 +118,13 @@ const linkTextHoverAnim = new KeyframeEffectParameters({
     offset: [0, 0.499, 0.5, 1],
     // respective CSS property keyframes:
     clipPath: ['inset(0 0 0 0)', 'inset(100% 0 0 0)', 'inset(0 0 100% 0)', 'inset(0 0 0 0)'],
-    top: ['0', '-20px', '20px', '0']
+    top: ['0', '-20px', '20px', '0'],
+    // equivalent to CSS animation-timing-function:
+    easing: 'ease'
   },
 
   options: {
-    duration: 700,
-    easing: 'ease'
+    duration: 700
   }
   
 });

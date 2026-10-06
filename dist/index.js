@@ -72,12 +72,7 @@ class KeyframeEffectParameters {
      */
     constructor({ keyframes, options = {} }) {
         this.keyframes = keyframes;
-        const parsedOptions = parseOptionsArg(options);
-        // CSS defaults to 'ease', but the Web Animations API defaults to 'linear'
-        // https://drafts.csswg.org/web-animations-1/#dom-effecttiming-easing
-        if (!('easing' in parsedOptions))
-            parsedOptions.easing = 'ease';
-        this.options = parsedOptions;
+        this.options = parseOptionsArg(options);
     }
     /**
      * @param obj
@@ -127,6 +122,9 @@ class ConvertedKeyframes {
     /**
      * @param options Keyframe effect options.
      *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#options)
+     *
+     *  To ease like CSS, leave out `easing`. If you set it, it eases the whole
+     *  animation at once, on top of each keyframe's easing.
      */
     toKeyframeEffect(options) {
         const keyframeEffect = new KeyframeEffectParameters({
@@ -145,6 +143,9 @@ const CHARS = {
     DOUBLE_HYPHEN_MINUS: '--',
     WEBKIT_PREFIX: '-webkit-'
 };
+/** https://drafts.csswg.org/css-animations/#animation-timing-function */
+const TIMING_FUNCTION_PROPERTY = 'animation-timing-function';
+const DEFAULT_TIMING_FUNCTION = 'ease';
 /**
  * Converts a CSS keyframes rule to Web Animations API keyframes.
  * @param keyframesRule The rule to convert.
@@ -167,15 +168,28 @@ function convertKeyframesRule(keyframesRule) {
 function parseKeyframe({ keyframe, percent }) {
     const offset = percent / 100;
     const parsedProperties = parseKeyframeProperties(keyframe.style);
+    // a CSS keyframe's timing function eases the segment up to the next keyframe,
+    // like a Web Animations API keyframe's `easing`.
+    // keyframes without one use the animation's timing function, which is set on
+    // the animated element, not in the rule, so we use its initial value, `ease`
+    // (a Web Animations API keyframe's `easing` defaults to `linear`).
+    // see: https://drafts.csswg.org/css-animations/#timing-functions
+    let easing = keyframe.style.getPropertyValue(TIMING_FUNCTION_PROPERTY);
+    if (easing === '')
+        easing = DEFAULT_TIMING_FUNCTION;
     const parsedKeyframe = {
         ...parsedProperties,
-        offset
+        offset,
+        easing
     };
     return parsedKeyframe;
 }
 function parseKeyframeProperties(style) {
     const parsedProperties = {};
     for (const propertyName of style) {
+        // converted to the keyframe's `easing`, in `parseKeyframe`
+        if (propertyName === TIMING_FUNCTION_PROPERTY)
+            continue;
         /// https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/getPropertyValue
         const propertyValue = style.getPropertyValue(propertyName);
         /// https://drafts.csswg.org/web-animations-1/#ref-for-animation-property-name-to-idl-attribute-name%E2%91%A0
@@ -238,6 +252,28 @@ function removeSuffix(value, suffix) {
 }
 
 /**
+ * Checks whether a stylesheet's rules can be read.
+ *
+ * Reading `cssRules` throws a `SecurityError` when the stylesheet
+ * isn't origin-clean, e.g. a cross-origin `<link>` loaded without CORS.
+ * Browsers differ on which stylesheets qualify (Safari 17 also treats
+ * `data:` URL stylesheets in sandboxed iframes as cross-origin),
+ * so we test for access instead of comparing origins.
+ * @see https://drafts.csswg.org/cssom/#dom-cssstylesheet-cssrules
+ */
+function isStyleSheetAccessible(styleSheet) {
+    try {
+        styleSheet.cssRules;
+        return true;
+    }
+    catch (error) {
+        if (error instanceof DOMException && error.name === 'SecurityError')
+            return false;
+        throw error;
+    }
+}
+
+/**
  * Converts a CSS keyframes rule from a stylesheet (or stylesheet list)
  * into Web Animations API keyframes.
  * @param obj
@@ -248,6 +284,15 @@ function removeSuffix(value, suffix) {
  *    - Thrown if keyframes rule name is not a string.
  *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
+ *  - `SecurityError`
+ *    - Thrown if source is a `CSSStyleSheet` whose rules can't be read
+ *      (e.g. a cross-origin stylesheet loaded without CORS).
+ * @remarks
+ *  - If multiple rules have the name, the last one is used, like in CSS.
+ *  - When searching a `StyleSheetList`, stylesheets whose rules can't be read
+ *    are skipped.
+ *  - Only top-level rules are read: `@keyframes` rules nested in other rules
+ *    (e.g. `@media`, `@supports` or `@layer`) aren't found.
  * @group Converting Stylesheet Keyframes
  */
 function convertStyleSheetKeyframes({ of: ruleName, in: source }) {
@@ -270,13 +315,14 @@ function convertStyleSheetKeyframes({ of: ruleName, in: source }) {
 }
 function convertStyleSheetKeyframesInStyleSheetList({ of: ruleName, styleSheetList }) {
     const foundRules = Array.from(styleSheetList)
+        .filter(isStyleSheetAccessible)
         .map(styleSheet => findKeyframesRuleInStyleSheet({ ruleName, styleSheet }))
         .filter(rule => rule !== undefined);
+    // the last rule with the name is the one CSS uses
+    // see: https://drafts.csswg.org/css-animations/#keyframes
     const foundRule = foundRules.at(-1);
     if (foundRule === undefined)
         return;
-    if (foundRules.length > 1)
-        console.warn(`Found multiple declarations for keyframes rule ${ruleName}. Using rule from last stylesheet in list.`);
     return convertKeyframesRule(foundRule);
 }
 function convertStyleSheetKeyframesInStyleSheet({ of: ruleName, styleSheet }) {
@@ -287,7 +333,9 @@ function convertStyleSheetKeyframesInStyleSheet({ of: ruleName, styleSheet }) {
 }
 function findKeyframesRuleInStyleSheet({ ruleName, styleSheet }) {
     const cssRules = Array.from(styleSheet.cssRules);
-    const rule = cssRules.find((rule) => rule instanceof CSSKeyframesRule &&
+    // the last rule with the name is the one CSS uses
+    // see: https://drafts.csswg.org/css-animations/#keyframes
+    const rule = cssRules.findLast((rule) => rule instanceof CSSKeyframesRule &&
         rule.name === ruleName);
     return rule;
 }
@@ -300,6 +348,15 @@ function findKeyframesRuleInStyleSheet({ ruleName, styleSheet }) {
  * @throws
  *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
+ *  - `SecurityError`
+ *    - Thrown if source is a `CSSStyleSheet` whose rules can't be read
+ *      (e.g. a cross-origin stylesheet loaded without CORS).
+ * @remarks
+ *  - If multiple rules have the same name, the last one is used, like in CSS.
+ *  - When reading a `StyleSheetList`, stylesheets whose rules can't be read
+ *    are skipped.
+ *  - Only top-level rules are read: `@keyframes` rules nested in other rules
+ *    (e.g. `@media`, `@supports` or `@layer`) aren't found.
  * @group Converting Stylesheet Keyframes
  */
 function convertAllStyleSheetKeyframesRules({ in: source }) {
@@ -315,10 +372,12 @@ function convertAllStyleSheetKeyframesRules({ in: source }) {
 function convertAllStyleSheetKeyframesRulesInStyleSheetList(styleSheetList) {
     const keyframesRules = new Map();
     for (const styleSheet of styleSheetList) {
+        if (!isStyleSheetAccessible(styleSheet))
+            continue;
         const rules = convertAllStyleSheetKeyframesRulesInStyleSheet(styleSheet);
         for (const [ruleName, keyframesRule] of rules) {
-            if (keyframesRules.has(ruleName))
-                console.warn(`Found multiple declarations for keyframes rule ${ruleName}. Using rule from last stylesheet in list.`);
+            // the last rule with the name is the one CSS uses
+            // see: https://drafts.csswg.org/css-animations/#keyframes
             keyframesRules.set(ruleName, keyframesRule);
         }
     }
