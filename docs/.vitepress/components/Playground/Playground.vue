@@ -74,6 +74,7 @@ onMounted(async () => {
 @media (max-width: 1000px) {
   .playground {
     flex-flow: column-reverse;
+    gap: 49px;
   }
   .playground .preview-pane {
     border-bottom-width: 0;

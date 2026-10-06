@@ -29,6 +29,12 @@ const activeTab = defineModel<Tab>({ required: true })
   box-shadow: inset 0 -1px var(--vp-code-tab-divider);
 }
 
+@media (max-width: 1000px) {
+  .tabs {
+    margin-top: -49px;
+  }
+}
+
 .tab {
   position: relative;
   display: inline-block;

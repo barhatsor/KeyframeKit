@@ -5,6 +5,7 @@ import * as monaco from 'monaco-editor'
 
 import './workers'
 import { setupHighlighting, themeFor } from './highlighting'
+import { retainTouchTargets } from './touchTargets'
 
 import type { Tab, Playground, PlaygroundOptions } from '../types'
 
@@ -80,6 +81,8 @@ export async function createPlayground(
     }
   })
 
+  const touchTargets = retainTouchTargets(editor)
+
   let currentTab: Tab = 'JS'
   const viewStates: Partial<Record<Tab, monaco.editor.ICodeEditorViewState | null>> = {}
 
@@ -102,6 +105,7 @@ export async function createPlayground(
     },
 
     dispose() {
+      touchTargets.dispose()
       editor.dispose()
       Object.values(models).forEach(model => model.dispose())
       dtsLib.dispose()
