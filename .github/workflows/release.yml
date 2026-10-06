@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          # Fetch full branch/tag history for conventional-changelog
+          # Fetch full branch/tag history for the release notes
           fetch-depth: 0
 
       - uses: actions/setup-node@v6
@@ -38,11 +38,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Auto-generate changelog and publish with provenance
+      # Publish with provenance, then create the GitHub release
+      # with auto-generated release notes
       - name: Release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           npm publish --provenance --access public
-          npx git-cliff --latest \
-            | gh release create "$GITHUB_REF_NAME" -F -
+          npx changelogithub --no-emoji --no-contributors
