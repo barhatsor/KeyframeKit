@@ -69,7 +69,7 @@ textAnimEl.addEventListener('${jsAnimActivateEvent}', () => {
 textAnimEl.addEventListener('${jsAnimDeactivateEvent}', () => {
   // reverse the animation
   attachedAnims.forEach(anim => {
-    anim.playbackRate = -1;
+    anim.reverse();
   });
   updateProgressBar();
 });
