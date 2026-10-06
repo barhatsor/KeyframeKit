@@ -65,12 +65,6 @@ export async function createPlayground(
     fixedOverflowWidgets: true,
     renderLineHighlightOnlyWhenFocus: true,
 
-    inertialScroll: isTouchDevice,
-    mouseWheelScrollSensitivity: isTouchDevice ? 10 : 1,
-    scrollPredominantAxis: !isTouchDevice,
-    smoothScrolling: isTouchDevice,
-    contextmenu: !isTouchDevice,
-
     tabSize: 2,
     lineNumbers: 'off',
     scrollbar: {
@@ -78,7 +72,19 @@ export async function createPlayground(
     },
     lightbulb: {
       enabled: monaco.editor.ShowLightbulbIconMode.Off
-    }
+    },
+
+    ...(isTouchDevice ? {
+      inertialScroll: true,
+      mouseWheelScrollSensitivity: 10,
+      scrollPredominantAxis: false,
+      smoothScrolling: true,
+      contextmenu: false,
+      stickyScroll: { enabled: false },
+      wordWrap: 'on',
+      wordWrapIndicator: true,
+      acceptSuggestionOnEnter: 'off'
+    } : {})
   })
 
   const touchTargets = retainTouchTargets(editor)
