@@ -52,10 +52,10 @@ index e903c70..6757b1c 100644
              const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
              const maxHeightBelow = Math.min(bodyBox.height - cursorBottom - info.verticalPadding, fullHeight);
 diff --git a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
-index b3f75e0..8e6b1c9 100644
+index b3f75e0..aed52db 100644
 --- a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
 +++ b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
-@@ -413,16 +413,20 @@ ${tagToString(tag)}`;
+@@ -413,16 +413,19 @@ ${tagToString(tag)}`;
  }
  function tagToString(tag) {
    let tagLabel = `*@${tag.name}*`;
