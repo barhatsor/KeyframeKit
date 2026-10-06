@@ -23,6 +23,18 @@ describe('convertStyleSheetKeyframes', () => {
     expect(result.keyframes[1]).toMatchObject({ offset: 1, opacity: '1' });
   });
 
+  it('uses the last of multiple rules with the same name, like CSS', async () => {
+    const sheet = await createStyleSheet(`
+      @keyframes fade { 0% { opacity: 0.1; } 100% { opacity: 0.2; } }
+      @keyframes fade { 0% { opacity: 0.8; } 100% { opacity: 0.9; } }
+    `);
+
+    const result = convertStyleSheetKeyframes({ of: 'fade', in: sheet });
+
+    assert(result);
+    expect(result.keyframes[0]).toMatchObject({ opacity: '0.8' });
+  });
+
   it('returns undefined for a non-existent rule name', async () => {
     const sheet = await createStyleSheet(`
       @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }

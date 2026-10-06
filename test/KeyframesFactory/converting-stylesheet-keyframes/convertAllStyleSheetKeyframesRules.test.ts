@@ -33,6 +33,16 @@ describe('convertAllStyleSheetKeyframesRules', () => {
     expect(Object.keys(result)).toHaveLength(0);
   });
 
+  it('uses the last of multiple rules with the same name', async () => {
+    const sheet = await createStyleSheet(`
+      @keyframes fade { 0% { opacity: 0.1; } 100% { opacity: 0.2; } }
+      @keyframes fade { 0% { opacity: 0.8; } 100% { opacity: 0.9; } }
+    `);
+
+    const result = convertAllStyleSheetKeyframesRules({ in: sheet });
+    expect(result.get('fade')?.keyframes[0]).toMatchObject({ opacity: '0.8' });
+  });
+
   it('works with StyleSheetList', async () => {
     const style = document.createElement('style');
     style.textContent = `

@@ -17,6 +17,7 @@ import { isStyleSheetAccessible } from './isStyleSheetAccessible';
  *    - Thrown if source is a `CSSStyleSheet` whose rules can't be read
  *      (e.g. a cross-origin stylesheet loaded without CORS).
  * @remarks
+ *  - If multiple rules have the same name, the last one is used, like in CSS.
  *  - When reading a `StyleSheetList`, stylesheets whose rules can't be read
  *    are skipped.
  * @group Converting Stylesheet Keyframes
@@ -50,9 +51,8 @@ function convertAllStyleSheetKeyframesRulesInStyleSheetList(
     const rules = convertAllStyleSheetKeyframesRulesInStyleSheet(styleSheet);
 
     for (const [ruleName, keyframesRule] of rules) {
-      if (keyframesRules.has(ruleName))
-        console.warn(`Found multiple declarations for keyframes rule ${ruleName}. Using rule from last stylesheet in list.`);
-      
+      // the last rule with the name is the one CSS uses
+      // see: https://drafts.csswg.org/css-animations/#keyframes
       keyframesRules.set(ruleName, keyframesRule);
     }
 
