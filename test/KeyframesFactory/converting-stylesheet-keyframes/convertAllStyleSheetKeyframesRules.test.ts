@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, assert } from 'vitest';
 import { convertAllStyleSheetKeyframesRules, ConvertedKeyframes } from '../../../src/index';
 import { createStyleSheet } from './createStyleSheet-helper';
+import { appendUnreadableStyleSheet } from './appendUnreadableStyleSheet-helper';
 
 
 describe('convertAllStyleSheetKeyframesRules', () => {
@@ -25,11 +26,21 @@ describe('convertAllStyleSheetKeyframesRules', () => {
     expect(result.get('slideUp')).toBeInstanceOf(ConvertedKeyframes);
   });
 
-  it('returns empty object when no keyframes rules exist', async () => {
+  it('returns empty map when no keyframes rules exist', async () => {
     const sheet = await createStyleSheet('.foo { color: red; }');
 
     const result = convertAllStyleSheetKeyframesRules({ in: sheet });
-    expect(Object.keys(result)).toHaveLength(0);
+    expect(result.size).toBe(0);
+  });
+
+  it('uses the last of multiple rules with the same name', async () => {
+    const sheet = await createStyleSheet(`
+      @keyframes fade { 0% { opacity: 0.1; } 100% { opacity: 0.2; } }
+      @keyframes fade { 0% { opacity: 0.8; } 100% { opacity: 0.9; } }
+    `);
+
+    const result = convertAllStyleSheetKeyframesRules({ in: sheet });
+    expect(result.get('fade')?.keyframes[0]).toMatchObject({ opacity: '0.8' });
   });
 
   it('works with StyleSheetList', async () => {
@@ -56,6 +67,47 @@ describe('convertAllStyleSheetKeyframesRules', () => {
     expect(() => {
       convertAllStyleSheetKeyframesRules({ in: 'bad' as any });
     }).toThrow(TypeError);
+  });
+
+  it('skips unreadable stylesheets in a StyleSheetList', () => {
+    const unreadableStyle = appendUnreadableStyleSheet(`
+      @keyframes unreadable { 0% { opacity: 0; } 100% { opacity: 1; } }
+    `);
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+    `;
+    document.head.appendChild(style);
+
+    try {
+      const result = convertAllStyleSheetKeyframesRules({
+        in: document.styleSheets
+      });
+
+      expect(result.get('fadeIn')).toBeInstanceOf(ConvertedKeyframes);
+      expect(result.has('unreadable')).toBe(false);
+    } finally {
+      unreadableStyle.remove();
+      style.remove();
+    }
+  });
+
+  it('throws SecurityError for an unreadable CSSStyleSheet', () => {
+    const unreadableStyle = appendUnreadableStyleSheet(`
+      @keyframes unreadable { 0% { opacity: 0; } 100% { opacity: 1; } }
+    `);
+
+    try {
+      assert(unreadableStyle.sheet);
+      const sheet = unreadableStyle.sheet;
+
+      expect(() => {
+        convertAllStyleSheetKeyframesRules({ in: sheet });
+      }).toThrow(expect.objectContaining({ name: 'SecurityError' }));
+    } finally {
+      unreadableStyle.remove();
+    }
   });
 
 });

@@ -10,6 +10,15 @@
  * @throws
  *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
+ *  - `SecurityError`
+ *    - Thrown if source is a `CSSStyleSheet` whose rules can't be read
+ *      (e.g. a cross-origin stylesheet loaded without CORS).
+ * @remarks
+ *  - If multiple rules have the same name, the last one is used, like in CSS.
+ *  - When reading a `StyleSheetList`, stylesheets whose rules can't be read
+ *    are skipped.
+ *  - Only top-level rules are read: `@keyframes` rules nested in other rules
+ *    (e.g. `@media`, `@supports` or `@layer`) aren't found.
  * @group Converting Stylesheet Keyframes
  */
 export declare function convertAllStyleSheetKeyframesRules({ in: source }: {
@@ -28,6 +37,9 @@ export declare class ConvertedKeyframes {
     /**
      * @param options Keyframe effect options.
      *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#options)
+     *
+     *  To ease like CSS, leave out `easing`. If you set it, it eases the whole
+     *  animation at once, on top of each keyframe's easing.
      */
     toKeyframeEffect(options: number | KeyframeEffectOptions | null): KeyframeEffectParameters;
 }
@@ -56,6 +68,15 @@ export declare function convertKeyframesRule(keyframesRule: CSSKeyframesRule): C
  *    - Thrown if keyframes rule name is not a string.
  *  - `TypeError`
  *    - Thrown if source is not a `CSSStyleSheet` or a `StyleSheetList`.
+ *  - `SecurityError`
+ *    - Thrown if source is a `CSSStyleSheet` whose rules can't be read
+ *      (e.g. a cross-origin stylesheet loaded without CORS).
+ * @remarks
+ *  - If multiple rules have the name, the last one is used, like in CSS.
+ *  - When searching a `StyleSheetList`, stylesheets whose rules can't be read
+ *    are skipped.
+ *  - Only top-level rules are read: `@keyframes` rules nested in other rules
+ *    (e.g. `@media`, `@supports` or `@layer`) aren't found.
  * @group Converting Stylesheet Keyframes
  */
 export declare function convertStyleSheetKeyframes({ of: ruleName, in: source }: {

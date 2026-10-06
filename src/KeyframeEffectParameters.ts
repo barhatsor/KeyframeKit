@@ -32,15 +32,7 @@ export class KeyframeEffectParameters {
   }) {
 
     this.keyframes = keyframes;
-    
-    const parsedOptions = parseOptionsArg(options);
-
-    // CSS defaults to 'ease', but the Web Animations API defaults to 'linear'
-    // https://drafts.csswg.org/web-animations-1/#dom-effecttiming-easing
-    if (!('easing' in parsedOptions))
-      parsedOptions.easing = 'ease';
-
-    this.options = parsedOptions;
+    this.options = parseOptionsArg(options);
 
   }
 

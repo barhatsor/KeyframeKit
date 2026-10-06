@@ -10,6 +10,10 @@ const CHARS = {
   WEBKIT_PREFIX: '-webkit-'
 } as const;
 
+/** https://drafts.csswg.org/css-animations/#animation-timing-function */
+const TIMING_FUNCTION_PROPERTY = 'animation-timing-function';
+const DEFAULT_TIMING_FUNCTION = 'ease';
+
 
 /**
  * Converts a CSS keyframes rule to Web Animations API keyframes.
@@ -50,10 +54,21 @@ function parseKeyframe({ keyframe, percent }: {
   const offset = percent / 100;
 
   const parsedProperties = parseKeyframeProperties(keyframe.style);
+  
+  // a CSS keyframe's timing function eases the segment up to the next keyframe,
+  // like a Web Animations API keyframe's `easing`.
+  // keyframes without one use the animation's timing function, which is set on
+  // the animated element, not in the rule, so we use its initial value, `ease`
+  // (a Web Animations API keyframe's `easing` defaults to `linear`).
+  // see: https://drafts.csswg.org/css-animations/#timing-functions
+  let easing = keyframe.style.getPropertyValue(TIMING_FUNCTION_PROPERTY);
+  if (easing === '')
+    easing = DEFAULT_TIMING_FUNCTION;
 
   const parsedKeyframe: Keyframe = {
     ...parsedProperties,
-    offset
+    offset,
+    easing
   };
 
   return parsedKeyframe;
@@ -68,6 +83,10 @@ function parseKeyframeProperties(style: CSSStyleDeclaration) {
   const parsedProperties: KeyframeProperties = {};
 
   for (const propertyName of style) {
+
+    // converted to the keyframe's `easing`, in `parseKeyframe`
+    if (propertyName === TIMING_FUNCTION_PROPERTY)
+      continue;
 
     /// https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleDeclaration/getPropertyValue
     const propertyValue = style.getPropertyValue(propertyName);
