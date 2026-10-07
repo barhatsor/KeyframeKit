@@ -87,6 +87,9 @@ export async function createPlayground(
     tabSize: 2,
     lineNumbers: 'off',
     scrollbar: {
+      // once the editor is scrolled to its top or bottom,
+      // let the wheel scroll the page instead
+      alwaysConsumeMouseWheel: false,
       ignoreHorizontalScrollbarInContentHeight: true,
       ...(isTouchDevice ? {
         verticalScrollbarSize: 10,
@@ -129,6 +132,11 @@ export async function createPlayground(
       if (tab === currentTab) return
       viewStates[currentTab] = editor.saveViewState()
       currentTab = tab
+      // Detach the current model first, as VS Code does when switching editors.
+      // Swapping models directly would keep the previous model's sticky scroll
+      // header up until the new model's is computed (~300ms); with no model
+      // in between, monaco clears it right away.
+      editor.setModel(null)
       editor.setModel(models[tab])
       editor.restoreViewState(viewStates[tab] ?? null)
     },
