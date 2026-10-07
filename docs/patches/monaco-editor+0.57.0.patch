@@ -1,38 +1,58 @@
 diff --git a/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js b/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js
-index ecf40c1..56c9e25 100644
+index ecf40c1..dcc37f2 100644
 --- a/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js
 +++ b/node_modules/monaco-editor/esm/vs/editor/contrib/hover/browser/resizableContentWidget.js
-@@ -1,7 +1,7 @@
+@@ -1,7 +1,8 @@
  import { ResizableHTMLElement } from '../../../../base/browser/ui/resizable/resizable.js';
  import { Disposable } from '../../../../base/common/lifecycle.js';
  import { Position } from '../../../common/core/position.js';
 -import { Dimension, getDomNodePagePosition, getClientArea } from '../../../../base/browser/dom.js';
 +import { Dimension, getClientArea } from '../../../../base/browser/dom.js';
++import { isIOS } from '../../../../base/common/platform.js';
  
  /*---------------------------------------------------------------------------------------------
   *  Copyright (c) Microsoft Corporation. All rights reserved.
-@@ -50,7 +50,8 @@ class ResizableContentWidget extends Disposable {
+@@ -9,6 +10,13 @@ import { Dimension, getDomNodePagePosition, getClientArea } from '../../../../ba
+  *--------------------------------------------------------------------------------------------*/
+ const TOP_HEIGHT = 30;
+ const BOTTOM_HEIGHT = 24;
++// Top of the area `getClientArea(body)` measures, in `getBoundingClientRect`
++// coordinates: on iOS that's the visual viewport, which the on-screen keyboard
++// shrinks and which moves within the window as the page scrolls.
++function visibleAreaTop(node) {
++    const visualViewport = node.ownerDocument.defaultView?.visualViewport;
++    return isIOS && visualViewport ? visualViewport.offsetTop : 0;
++}
+ class ResizableContentWidget extends Disposable {
+     constructor(_editor, minimumSize = new Dimension(10, 10)) {
+         super();
+@@ -50,8 +58,9 @@ class ResizableContentWidget extends Disposable {
          if (!editorDomNode || !mouseBox) {
              return;
          }
 -        const editorBox = getDomNodePagePosition(editorDomNode);
-+        // viewport-relative, like the space below
-+        const editorBox = editorDomNode.getBoundingClientRect();
-         return editorBox.top + mouseBox.top - TOP_HEIGHT;
+-        return editorBox.top + mouseBox.top - TOP_HEIGHT;
++        // relative to the visible area, like the space below
++        const editorTop = editorDomNode.getBoundingClientRect().top - visibleAreaTop(editorDomNode);
++        return editorTop + mouseBox.top - TOP_HEIGHT;
      }
      _availableVerticalSpaceBelow(position) {
-@@ -59,7 +60,8 @@ class ResizableContentWidget extends Disposable {
+         const editorDomNode = this._editor.getDomNode();
+@@ -59,9 +68,10 @@ class ResizableContentWidget extends Disposable {
          if (!editorDomNode || !mouseBox) {
              return;
          }
 -        const editorBox = getDomNodePagePosition(editorDomNode);
-+        // viewport-relative, like `bodyBox`
-+        const editorBox = editorDomNode.getBoundingClientRect();
++        // relative to the visible area, like `bodyBox`
++        const editorTop = editorDomNode.getBoundingClientRect().top - visibleAreaTop(editorDomNode);
          const bodyBox = getClientArea(editorDomNode.ownerDocument.body);
-         const mouseBottom = editorBox.top + mouseBox.top + mouseBox.height;
+-        const mouseBottom = editorBox.top + mouseBox.top + mouseBox.height;
++        const mouseBottom = editorTop + mouseBox.top + mouseBox.height;
          return bodyBox.height - mouseBottom - BOTTOM_HEIGHT;
+     }
+     _findPositionPreference(widgetHeight, showAtPosition) {
 diff --git a/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js b/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js
-index e903c70..6757b1c 100644
+index e903c70..62a44fe 100644
 --- a/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js
 +++ b/node_modules/monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestWidget.js
 @@ -1,4 +1,4 @@
@@ -41,16 +61,34 @@ index e903c70..6757b1c 100644
  import '../../../../base/browser/ui/codicons/codicon/codicon.css';
  import '../../../../base/browser/ui/codicons/codicon/codicon-modifiers.css';
  import { List } from '../../../../base/browser/ui/list/listWidget.js';
-@@ -741,7 +741,8 @@ let SuggestWidget = class SuggestWidget {
+@@ -35,7 +35,7 @@ import { ItemRenderer } from './suggestWidgetRenderer.js';
+ import { getListStyles } from '../../../../platform/theme/browser/defaultStyles.js';
+ import { status } from '../../../../base/browser/ui/aria/aria.js';
+ import { CompletionItemKinds } from '../../../common/languages.js';
+-import { isWindows } from '../../../../base/common/platform.js';
++import { isWindows, isIOS } from '../../../../base/common/platform.js';
+ 
+ /*---------------------------------------------------------------------------------------------
+  *  Copyright (c) Microsoft Corporation. All rights reserved.
+@@ -741,11 +741,15 @@ let SuggestWidget = class SuggestWidget {
              // height math
              const fullHeight = info.statusBarHeight + this._list.contentHeight + info.borderHeight;
              const minHeight = info.itemHeight + info.statusBarHeight;
 -            const editorBox = getDomNodePagePosition(this.editor.getDomNode());
-+            // viewport-relative, like `bodyBox`
-+            const editorBox = this.editor.getDomNode().getBoundingClientRect();
++            // relative to the area `bodyBox` measures: on iOS that's the visual viewport,
++            // which the on-screen keyboard shrinks and which moves within the window
++            const editorDomNode = this.editor.getDomNode();
++            const visualViewport = getWindow(editorDomNode).visualViewport;
++            const editorTop = editorDomNode.getBoundingClientRect().top - (isIOS && visualViewport ? visualViewport.offsetTop : 0);
              const cursorBox = this.editor.getScrolledVisiblePosition(this.editor.getPosition());
-             const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
+-            const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
++            const cursorBottom = editorTop + cursorBox.top + cursorBox.height;
              const maxHeightBelow = Math.min(bodyBox.height - cursorBottom - info.verticalPadding, fullHeight);
+-            const availableSpaceAbove = editorBox.top + cursorBox.top - info.verticalPadding;
++            const availableSpaceAbove = editorTop + cursorBox.top - info.verticalPadding;
+             const maxHeightAbove = Math.min(availableSpaceAbove, fullHeight);
+             let maxHeight = Math.min(Math.max(maxHeightAbove, maxHeightBelow) + info.borderHeight, fullHeight);
+             if (height === this._cappedHeight?.capped) {
 diff --git a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js b/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
 index b3f75e0..aed52db 100644
 --- a/node_modules/monaco-editor/esm/vs/languages/features/typescript/languageFeatures.js
