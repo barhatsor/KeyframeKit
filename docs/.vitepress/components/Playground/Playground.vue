@@ -133,6 +133,11 @@ onMounted(async () => {
   border-bottom-right-radius: inherit;
 }
 
+/* keep tooltips (e.g. the find widget's) from wrapping near the editor's right edge */
+.editor-mount > :deep(.context-view) {
+  min-width: max-content;
+}
+
 .preview-pane {
   border: 1px solid var(--vp-code-block-bg);
   border-left-width: 0;
