@@ -64,18 +64,23 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* The outer corners are rounded on the panes, rather than by clipping the
+   playground, which would also clip the editor's suggest list and hovers
+   where they extend past it. */
 .playground {
   display: flex;
   height: 500px;
   --border-radius: 8px;
-  border-radius: var(--border-radius);
-  overflow: hidden;
+  --tabs-radius: var(--border-radius) 0 0 0;
+  --editor-radius: 0 0 0 var(--border-radius);
 }
 
 @media (max-width: 1000px) {
   .playground {
     flex-flow: column-reverse;
     gap: 49px;
+    --tabs-radius: 0;
+    --editor-radius: 0 0 var(--border-radius) var(--border-radius);
   }
   .playground .preview-pane {
     border-bottom-width: 0;
@@ -111,6 +116,15 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   position: absolute;
+}
+
+.editor-pane > .tabs {
+  border-radius: var(--tabs-radius);
+}
+/* the editor's background, and its content, which `.overflow-guard` clips */
+.editor-mount > :deep(.monaco-editor),
+.editor-mount > :deep(.monaco-editor > .overflow-guard) {
+  border-radius: var(--editor-radius);
 }
 
 .preview-pane {

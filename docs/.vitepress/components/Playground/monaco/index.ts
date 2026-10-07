@@ -81,7 +81,6 @@ export async function createPlayground(
     scrollBeyondLastLine: false,
     padding: { top: 20, bottom: 20 },
     automaticLayout: true,
-    fixedOverflowWidgets: true,
     renderLineHighlightOnlyWhenFocus: true,
 
     tabSize: 2,
@@ -107,9 +106,9 @@ export async function createPlayground(
       contextmenu: false,
       stickyScroll: { enabled: false },
       overviewRulerLanes: 0,
-      quickSuggestions: 'off',
-      suggestOnTriggerCharacters: false,
-      parameterHints: { enabled: false }
+      //quickSuggestions: 'off',
+      //suggestOnTriggerCharacters: false,
+      //parameterHints: { enabled: false }
     } : {})
   })
 
