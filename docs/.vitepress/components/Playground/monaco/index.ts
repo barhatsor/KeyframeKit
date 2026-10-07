@@ -109,12 +109,9 @@ export async function createPlayground(
       smoothScrolling: true,
       contextmenu: false,
       stickyScroll: { enabled: false },
-      wordWrap: 'on',
-      wordWrapIndicator: true,
       overviewRulerLanes: 0,
       quickSuggestions: 'off',
       suggestOnTriggerCharacters: false,
-      // acceptSuggestionOnEnter: 'off',
       parameterHints: { enabled: false }
     } : {})
   })
