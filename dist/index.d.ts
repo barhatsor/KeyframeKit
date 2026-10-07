@@ -39,7 +39,7 @@ export declare class ConvertedKeyframes {
      *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#options)
      *
      *  Note: to ease like CSS, leave out `easing`. If you set it, it eases the whole
-     *  animation at once, on top of each keyframe's easing.
+     *  animation at once, on top of each keyframe's easing. Instead, set per-keyframe easing.
      */
     toKeyframeEffect(options: number | KeyframeEffectOptions | null): KeyframeEffectParameters;
 }
