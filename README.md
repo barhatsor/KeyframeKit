@@ -1,16 +1,16 @@
-# [<img src="/docs/docs/public/icon.png" width="30px" height="40px"> KeyframeKit][KeyframeKit]
-
-Unlock full playback control over your CSS animations with JavaScript.
+# <img src="docs/docs/public/icon.png" width="30px" height="30px"> KeyframeKit
 
 [![NPM version][npm-version-src]][npm-version-href]
 [![NPM downloads][npm-downloads-src]][npm-downloads-href]
 [![Minified size][minified-size-src]][minified-size-href]
-[![CI][ci-src]][ci-href]
+[![Site][site-src]][site-href]
+
+Unlock full playback control over your CSS animations with JavaScript.
 
 ## What is this?
 
 A lightweight TypeScript library that converts CSS `@keyframes` animations into [Web Animations API]-compatible animations, letting you play CSS-defined animations from JavaScript with full playback control and hardware-accelerated performance.  
-[Read more][KeyframeKit article] | [Live Demo]
+[Documentation][KeyframeKit Site] | [Live Demo]
 
 ## Installation
 
@@ -77,7 +77,7 @@ Instead of getting an animation from the document's stylesheets, you can also im
 import { importStyleSheet, convertStyleSheetKeyframes } from 'keyframekit';
 
 const styles = await importStyleSheet('./styles.css');
-// note: on Chrome, Edge or Firefox (not Safari), you can just write:
+// note: on Chrome, Edge or Firefox (soon Safari), you can just write:
 // import styles from './styles.css' with { type: 'css' };
 
 // get animation keyframes from stylesheet
@@ -135,7 +135,7 @@ attachedAnim.play();
 
 
 <!-- References -->
-[KeyframeKit]: https://keyframekit.berryscript.com
+[KeyframeKit Site]: https://keyframekit.berryscript.com
 [Web Animations API]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API
 [KeyframeKit article]: https://barhatsor.medium.com/99573ef4738b
 [Live Demo]: https://codepen.io/barhatsor/pen/JoRPNmz
@@ -146,11 +146,11 @@ attachedAnim.play();
 [KeyframeKit License]: ./LICENSE
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/keyframekit.svg
+[npm-version-src]: https://img.shields.io/npm/v/keyframekit.svg?color=6367FF
 [npm-version-href]: https://www.npmjs.com/package/keyframekit
-[npm-downloads-src]: https://img.shields.io/npm/d18m/keyframekit
+[npm-downloads-src]: https://img.shields.io/npm/d18m/keyframekit?color=8494FF
 [npm-downloads-href]: https://www.npmjs.com/package/keyframekit
-[minified-size-src]: https://img.shields.io/github/size/barhatsor/KeyframeKit/dist/index.min.js
+[minified-size-src]: https://img.shields.io/github/size/barhatsor/KeyframeKit/dist/index.min.js?color=C9BEFF
 [minified-size-href]: /dist/index.min.js
-[ci-src]: https://github.com/barhatsor/KeyframeKit/actions/workflows/ci.yml/badge.svg
-[ci-href]: https://github.com/barhatsor/KeyframeKit/actions/workflows/ci.yml
+[site-src]: https://img.shields.io/badge/see_it-live-FFDBFD
+[site-href]: https://keyframekit.berryscript.com
