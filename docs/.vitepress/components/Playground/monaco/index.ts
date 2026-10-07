@@ -105,8 +105,7 @@ export async function createPlayground(
       inertialScroll: true,
       contextmenu: false,
       stickyScroll: { enabled: false },
-      overviewRulerLanes: 0,
-      acceptSuggestionOnEnter: 'off'
+      overviewRulerLanes: 0
     } : {})
   })
 
