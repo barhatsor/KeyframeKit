@@ -104,8 +104,6 @@ export async function createPlayground(
 
     ...(isTouchDevice ? {
       inertialScroll: true,
-      // mouseWheelScrollSensitivity: 10,
-      // scrollPredominantAxis: false,
       contextmenu: false,
       stickyScroll: { enabled: false },
       overviewRulerLanes: 0,
