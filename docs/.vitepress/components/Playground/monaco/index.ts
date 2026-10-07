@@ -88,7 +88,7 @@ export async function createPlayground(
     scrollbar: {
       // once the editor is scrolled to its top or bottom,
       // let the wheel scroll the page instead
-      alwaysConsumeMouseWheel: false,
+      // alwaysConsumeMouseWheel: false,
       ignoreHorizontalScrollbarInContentHeight: true,
       ...(isTouchDevice ? {
         verticalScrollbarSize: 10,
