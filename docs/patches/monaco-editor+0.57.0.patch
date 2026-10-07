@@ -81,3 +81,22 @@ index b3f75e0..aed52db 100644
  }
  class SignatureHelpAdapter extends Adapter {
    constructor() {
+diff --git a/node_modules/monaco-editor/esm/vs/platform/hover/browser/hoverService.js b/node_modules/monaco-editor/esm/vs/platform/hover/browser/hoverService.js
+index 0d83a39..b426c94 100644
+--- a/node_modules/monaco-editor/esm/vs/platform/hover/browser/hoverService.js
++++ b/node_modules/monaco-editor/esm/vs/platform/hover/browser/hoverService.js
+@@ -704,9 +704,12 @@ class HoverContextViewDelegate {
+         return this._hover;
+     }
+     getAnchor() {
++        // the hover's position is relative to the window, like `getBoundingClientRect`,
++        // but the context view lays out in page coordinates
++        const targetWindow = getWindow(this._hover.domNode);
+         return {
+-            x: this._hover.x,
+-            y: this._hover.y
++            x: this._hover.x + targetWindow.scrollX,
++            y: this._hover.y + targetWindow.scrollY
+         };
+     }
+     layout() {
