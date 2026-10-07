@@ -71,16 +71,15 @@ onMounted(async () => {
   display: flex;
   height: 500px;
   --border-radius: 8px;
-  --tabs-radius: var(--border-radius) 0 0 0;
-  --editor-radius: 0 0 0 var(--border-radius);
 }
 
 @media (max-width: 1000px) {
   .playground {
     flex-flow: column-reverse;
     gap: 49px;
-    --tabs-radius: 0;
-    --editor-radius: 0 0 var(--border-radius) var(--border-radius);
+  }
+  .playground .editor-pane {
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
   }
   .playground .preview-pane {
     border-bottom-width: 0;
@@ -105,6 +104,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   background: var(--vp-code-block-bg);
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
   flex: 1;
 }
 
@@ -118,13 +118,19 @@ onMounted(async () => {
   position: absolute;
 }
 
+/* the tabs and the editor round the pane corners they cover */
 .editor-pane > .tabs {
-  border-radius: var(--tabs-radius);
+  border-top-left-radius: inherit;
+}
+.editor-container,
+.editor-mount {
+  border-radius: inherit;
 }
 /* the editor's background, and its content, which `.overflow-guard` clips */
 .editor-mount > :deep(.monaco-editor),
 .editor-mount > :deep(.monaco-editor > .overflow-guard) {
-  border-radius: var(--editor-radius);
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
 }
 
 .preview-pane {

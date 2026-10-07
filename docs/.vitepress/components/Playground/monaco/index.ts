@@ -106,9 +106,7 @@ export async function createPlayground(
       contextmenu: false,
       stickyScroll: { enabled: false },
       overviewRulerLanes: 0,
-      //quickSuggestions: 'off',
-      //suggestOnTriggerCharacters: false,
-      //parameterHints: { enabled: false }
+      acceptSuggestionOnEnter: 'off'
     } : {})
   })
 
